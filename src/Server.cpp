@@ -167,6 +167,46 @@ void Server::initServer(void) {
 	}
 }
 
+///// MAIN PROCESS /////
+
+void Server::handleNotifiedEvents(int fdsNumber) {
+
+	for (int i = 0; i < fdsNumber; ++i) {
+
+		int currentFd = _events[i].data.fd;
+		uint32_t currentEvent = _events[i].events;
+
+		if (currentFd == _serverSocket) {
+			handleNewClient();
+		}
+		// else {
+			// if (currentEvent & (EPOLLHUP | EPOLLRDHUP | EPOLLERR)) {
+			// 	handleClientDisconnection(currentFd);
+			// }
+			// else if (currentEvent & EPOLLIN) {
+			// 	handleClientData(currentFd);
+			// }
+		//}
+	}
+}
+
+void Server::run(void) {
+
+	while (true) {
+		int fdsNumber = epoll_wait(_epollFd, _events, MAX_EVENTS, -1);
+		if (fdsNumber == -1) {
+			if (errno == EINTR) {
+				continue ;
+			}
+			else {
+				//deleteAllNetwork();
+				throw std::runtime_error("Critical epoll_wait error. Server interruption.");
+			}
+		}
+		handleNotifiedEvents(fdsNumber);
+	}
+}
+
 ///// GETTERS /////
 
 int Server::getServerSocket(void) const {
