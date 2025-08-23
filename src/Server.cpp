@@ -1,6 +1,6 @@
 #include "Server.hpp"
 
-Server::Server(void) : _serverSocket(-1) {}
+Server::Server(const uint16_t port, const std::string pswd) : _port(port), _serverSocket(-1), _pswd(pswd) {}
 
 Server::~Server(void) {}
 
@@ -68,7 +68,108 @@ void	Server::handleNewClient(void) {
 	}
 }
 
-int Server::getServerSocket(void) {
+void Server::setSocketImmediatReuse(void) {
+
+	int	opt = 1;
+	if (setsockopt(_serverSocket,SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
+		std::ostringstream	oss;
+		oss << "Failed to initialize socket in immediate reuse mode.";
+		throw std::runtime_error(oss.str());
+	}
+}
+
+void Server::setSocketNonBlocking(void) {
+
+	int	flags = fcntl(_serverSocket, F_GETFL, 0);
+	if (flags < 0) {
+		std::ostringstream	oss;
+		oss << "fcntl failed on server socket: " << socket << " while setting it nonblocking";
+		throw std::runtime_error(oss.str());
+	}
+	if (fcntl(_serverSocket, F_SETFL, flags | O_NONBLOCK) == -1) {
+		std::ostringstream	oss;
+		oss << "fcntl failed on client: " << socket << " while setting it nonblocking";
+		throw std::runtime_error(oss.str());
+	}
+}
+
+void Server::bindSocket(void) {
+
+	struct addrinfo hints;
+	struct addrinfo *res;
+
+	std::memset(&hints, 0, sizeof(hints));
+	hints.ai_family = AF_INET;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_flags = AI_PASSIVE;
+
+	std::ostringstream portStr;
+	portStr << _port;
+
+	int ret = getaddrinfo(NULL, portStr.str().c_str(), &hints, &res);
+	if (ret != 0 || !res) {
+		throw std::runtime_error("getaddrinfo() failed for port " + portStr.str() + ": " + gai_strerror(ret));
+	}
+	if (bind(_serverSocket, res->ai_addr, res->ai_addrlen) < 0) {
+		freeaddrinfo(res);
+		throw std::runtime_error("bind() failed on port " + portStr.str() + ": " + strerror(errno));
+	}
+	freeaddrinfo(res);
+}
+
+void Server::setSocketListeningMode(void) {
+
+	if (listen(_serverSocket, SOMAXCONN) < 0) {
+		std::ostringstream	oss;
+		oss << "Failed to put IRC server socket on listening mode. Closing it.";
+		throw std::runtime_error(oss.str());
+	}
+}
+
+void Server::addSocketToEpoll(void) {
+
+	struct epoll_event	ev;
+
+	ev.events = EPOLLIN;
+	ev.data.fd = _serverSocket;
+	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, _serverSocket, &ev) < 0) {
+		std::ostringstream	oss;
+		oss << "Failed to add socket: " << socket << ". Closing it.";
+		throw std::runtime_error(oss.str());
+	}
+}
+
+void Server::socketInitProcess(void) {
+
+	setSocketImmediatReuse();
+	setSocketNonBlocking();
+	bindSocket();
+	setSocketListeningMode();
+	addSocketToEpoll();
+}
+
+void Server::initServer(void) {
+
+	_serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+	_epollFd = epoll_create1(0);
+
+	if (_serverSocket >= 0 && _epollFd >= 0) {
+		try {
+			socketInitProcess();
+			std::cout << YELLOW << "[SERVER] :: is ready to communicate!" << RESET << std::endl;
+		}
+		catch (const std::exception& e) {
+			close(_serverSocket);
+			std::cerr << RED << "Error while initializing IRC server:" << e.what() << RESET <<std::endl;
+		}
+	} else {
+			std::cerr << RED << "Failed to initialize IRC server socket. EXIT" << RESET << std::endl;
+	}
+}
+
+///// GETTERS /////
+
+int Server::getServerSocket(void) const {
 
 	return (_serverSocket);
 }

@@ -5,11 +5,13 @@
 #include <iostream>
 #include <sys/epoll.h>
 #include <fcntl.h>
+#include <netdb.h>
 #include <stdexcept>
 #include <map>
 #include <unistd.h>
 #include <sstream>
 #include <netinet/in.h>
+#include <cerrno>
 
 #define YELLOW "\033[33m"
 #define RED "\033[31m"
@@ -27,16 +29,29 @@ class Server {
 
 	uint16_t _port;
 	int _serverSocket;
+	const std::string _pswd;
 	int _epollFd;
 	std::map<int, Client> _clients;
 
 	public:
 
-	Server(void);
+	Server(const uint16_t port, const std::string pswd);
 	~Server(void);
-	int getServerSocket(void);
-	void setSocketNonBlocking(int fd);
-	int acceptClient(void);
-	void addClientToInterestList(int clientFd);
+
+	void run(void);
+	void initServer(void);
+	void socketInitProcess(void);
+	void setSocketImmediatReuse(void);
+	void setSocketNonBlocking(void);
+	void bindSocket(void);
+	void setSocketListeningMode(void);
+	void addSocketToEpoll(void);
 	void handleNewClient(void);
+	int acceptClient(void);
+	void setSocketNonBlocking(int fd);
+	void addClientToInterestList(int clientFd);
+	//void deleteClient(int clientFd);
+	//void deleteAllNetwork(void);
+
+	int getServerSocket(void) const;
 };
