@@ -42,11 +42,11 @@ std::string Client::getPrefix(void) const {
 	return (":" + _nickname + "!" + _username + "@" + _hostname);
 }
 
-const std::string& Client::getInputBuffer(void) const {
+std::string& Client::getInputBuffer(void) {
 	return (_inputBuffer);
 }
 
-const std::string& Client::getOutputBuffer(void) const {
+std::string& Client::getOutputBuffer(void) {
 	return (_outputBuffer);
 }
 

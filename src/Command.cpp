@@ -2,11 +2,16 @@
 
 Command::Command(void) {}
 
-Command::Command(const std::string& command) : _command(command) {}
+Command::Command(commandType type, const std::string& command) : _type(type), _command(command) {}
 
 Command::~Command(void) {}
 
 // GETTERS
+
+const commandType& Command::getCommandType(void) const {
+	return (_type);
+}
+
 const std::string& Command::getPrefix(void) const {
 	return (_prefix);
 }
@@ -32,6 +37,23 @@ const std::string& Command::getTrailing(void) const {
 }
 
 // SETTERS
+
+void Command::initTypesDicitonary(void) {
+	_typesDictionary["PASS"] = CMD_PASS;
+	_typesDictionary["NICK"] = CMD_NICK;
+	_typesDictionary["USER"] = CMD_USER;
+	_typesDictionary["JOIN"] = CMD_JOIN;
+	_typesDictionary["PRIVMSG"] = CMD_PRIVMSG;
+	_typesDictionary["KICK"] = CMD_KICK;
+	_typesDictionary["INVITE"] = CMD_INVITE;
+	_typesDictionary["TOPIC"] = CMD_TOPIC;
+	_typesDictionary["MODE"] = CMD_MODE;
+}
+
+void Command::setCommandType(commandType type) {
+	_type = type;
+}
+
 void Command::setPrefix(const std::string& prefix) {
 	_prefix = prefix;
 }

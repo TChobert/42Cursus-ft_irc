@@ -37,8 +37,8 @@ class Client {
 	const std::string& getUsername(void) const;
 	const std::string& getRealname(void) const;
 	const std::string& getHostname(void) const;
-	const std::string& getInputBuffer(void) const;
-	const std::string& getOutputBuffer(void) const;
+	std::string& getInputBuffer(void);
+	std::string& getOutputBuffer(void);
 	std::string getPrefix(void) const;
 	bool isAuthentificated(void) const;
 	bool isRegistered(void) const;

@@ -2,23 +2,42 @@
 
 #include <string>
 #include <vector>
+#include <map>
 #include <stdexcept>
+
+enum commandType {
+	CMD_UNKNOWN = 0,
+	CMD_PASS,
+	CMD_NICK,
+	CMD_USER,
+	CMD_JOIN,
+	CMD_PRIVMSG,
+	CMD_KICK,
+	CMD_INVITE,
+	CMD_TOPIC,
+	CMD_MODE
+};
 
 class Command {
 
 	private:
+
+		commandType _type;
 		std::string _prefix;
 		std::string _command;
 		std::vector<std::string> _params;
 		std::string _trailing;
 
 	public:
+
+		static std::map<std::string, commandType> _typesDictionary;
 		Command(void);
-		Command(const std::string& command);
+		Command(commandType type, const std::string& command);
 		~Command(void);
 
 	// GETTERS
 
+	const commandType& getCommandType(void) const;
 	const std::string& getPrefix(void) const;
 	const std::string& getCommand(void) const;
 	const std::string& getParam(size_t position) const;
@@ -27,6 +46,8 @@ class Command {
 
 	// SETTERS
 
+	void initTypesDicitonary(void);
+	void setCommandType(commandType type);
 	void setPrefix(const std::string& prefix);
 	void setCommand(const std::string& cmd);
 	void addParam(const std::string& param);
