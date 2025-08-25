@@ -6,14 +6,21 @@ IncomingDataHandler::~IncomingDataHandler(void) {}
 
 const char * IncomingDataHandler::CRLF = "\r\n";
 
+void IncomingDataHandler::trimSpaces(std::string& str) {
+
+	while (!str.empty() && str[0] == SPACE)
+		str.erase(0, 1);
+}
+
 void IncomingDataHandler::getCommandPrefix(std::string& line, Command& currentCommand, size_t& index) {
 
+	trimSpaces(line);
 	if (line[0] != ':')
 		return ;
 	size_t space = line.find(SPACE);
 	if (space != std::string::npos) {
 		currentCommand.setPrefix(line.substr(1, space - 1));
-		index += space + 1;
+		index += space;
 	} else {
 		return ;
 	}
@@ -25,19 +32,78 @@ void IncomingDataHandler::defineCommandType(Command& currentCommand, const std::
 		currentCommand.setCommandType(currentCommand._typesDictionary[commandKey]);
 	} else {
 		currentCommand.setCommandType(CMD_UNKNOWN);
+		// stop process !!
 	}
 }
 
-void IncomingDataHandler::getCommand(std::string& line, Command& currentCommand, size_t& index) {
+commandParseStatus IncomingDataHandler::ensureCommandIsComplete(commandType type) {
 
-	std::string command;
+  switch (type) {
+		case CMD_QUIT:
+		//case CMD_PING:
+			return COMPLETE_COMMAND;
+		case CMD_PASS:
+		case CMD_NICK:
+		case CMD_USER:
+		case CMD_JOIN:
+		case CMD_PRIVMSG:
+		case CMD_KICK:
+		case CMD_INVITE:
+		case CMD_TOPIC:
+		case CMD_MODE:
+			return UNCOMPLETE_COMMAND;
+		default:
+			return UNCOMPLETE_COMMAND;
+	}
+}
 
+void IncomingDataHandler::getCommand(std::string& line, Command& currentCommand, size_t& index, commandParseStatus& status) {
+
+	std::string commandKey;
+
+	trimSpaces(line);
 	size_t space = line.find(SPACE, index);
 	if (space == std::string::npos) {
-		command = line. substr(index);
-		defineCommandType(command);
-		
+		commandKey = line. substr(index);
+		defineCommandType(currentCommand, commandKey);
+		status = ensureCommandIsComplete(currentCommand.getCommandType());
+	} else {
+		commandKey = line.substr(index, space - index);
+		defineCommandType(currentCommand, commandKey);
 	}
+	currentCommand.setCommand(commandKey);
+	index += commandKey.size();
+}
+
+void splitAndAddParams(std::string params, Command& currentCommand) {
+
+	std::stringstream ss(params);
+	std::string currentParam;
+
+	while (ss >> currentParam) {
+		currentCommand.addParam(currentParam);
+	}
+}
+
+void IncomingDataHandler::getParamsAndTrailing(std::string& line, Command& currentCommand, size_t& index, commandParseStatus& status) {
+
+	trimSpaces(line);
+	size_t trailingOperator = line.find(':', index);
+
+	if (trailingOperator != std::string::npos) {
+		std::string paramsPart = line.substr(index, trailingOperator - index);
+		splitAndAddParams(paramsPart, currentCommand);
+
+		std::string trailingPart = line.substr(trailingOperator + 1);
+		currentCommand.setTrailing(trailingPart);
+	} else {
+		std::string paramsPart = line.substr(index);
+		splitAndAddParams(paramsPart, currentCommand);
+	}
+}
+
+void IncomingDataHandler::addCommandToList(Client& client, Command& command) {
+	client.addCommand(command);
 }
 
 void IncomingDataHandler::parseCommands(Client& client) {
@@ -47,6 +113,7 @@ void IncomingDataHandler::parseCommands(Client& client) {
 
 	while ((pos = buffer.find(CRLF)) != std::string::npos) {
 
+		commandParseStatus status = IN_PROGRESS;
 		std::string line = buffer.substr(0, pos);
 		buffer.erase(0, pos + 2);
 
@@ -57,9 +124,17 @@ void IncomingDataHandler::parseCommands(Client& client) {
 		size_t index = 0;
 
 		getCommandPrefix(line, currentCommand, index);
-		getCommand(line, currentCommand, index);
-		getParamsAndTrailing(line, currentCommand, index);
-		addCommand(currentCommand, client);
+		getCommand(line, currentCommand, index, status);
+		if (status == IN_PROGRESS) {
+			getParamsAndTrailing(line, currentCommand, index, status);
+		}
+		if (status == COMPLETE_COMMAND) {
+			addCommandToList(client, currentCommand);
+		}
+		else if (status == UNCOMPLETE_COMMAND) {
+			sendErrorMessage(currentCommand, client);
+			break ;
+		}
 	}
 }
 

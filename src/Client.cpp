@@ -91,3 +91,7 @@ void Client::flushInputBuffer(void) {
 void Client::flushOutputBuffer(void) {
 	_outputBuffer.clear();
 }
+
+void Client::addCommand(Command& command) {
+	_commands.push_back(command);
+}

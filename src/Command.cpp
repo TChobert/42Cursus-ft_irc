@@ -48,6 +48,7 @@ void Command::initTypesDicitonary(void) {
 	_typesDictionary["INVITE"] = CMD_INVITE;
 	_typesDictionary["TOPIC"] = CMD_TOPIC;
 	_typesDictionary["MODE"] = CMD_MODE;
+	_typesDictionary["QUIT"] = CMD_QUIT;
 }
 
 void Command::setCommandType(commandType type) {

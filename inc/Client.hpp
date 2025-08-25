@@ -15,7 +15,7 @@ class Client {
 	int _fd;
 	std::string _inputBuffer;
 	std::string _outputBuffer;
-	std::vector<Command> Commands;
+	std::vector<Command> _commands;
 
 	bool _isAuthentificated;
 	bool _isRegistered;
@@ -53,6 +53,7 @@ class Client {
 	void enqueueOutput(const std::string& output);
 	void flushInputBuffer(void);
 	void flushOutputBuffer(void);
+	void addCommand(Command& command);
 
 	// void joinChannel(const std::string& channel);
 	// void leaveChannel(const std::string& channel);
