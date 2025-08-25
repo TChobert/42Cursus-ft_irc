@@ -1,9 +1,11 @@
 #pragma once
 
 #include <string>
+#include <vector>
 #include <unistd.h>
 
 #include "authFlags.hpp"
+#include "Command.hpp"
 
 class Client {
 
@@ -13,6 +15,7 @@ class Client {
 	int _fd;
 	std::string _inputBuffer;
 	std::string _outputBuffer;
+	std::vector<Command> Commands;
 
 	bool _isAuthentificated;
 	bool _isRegistered;

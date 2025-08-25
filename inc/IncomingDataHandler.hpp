@@ -12,7 +12,8 @@
 enum readStatus {
 
 	READY_TO_PARSE,
-	DISCONNECTED
+	DISCONNECTED,
+	NOT_READY
 };
 
 class IncomingDataHandler {
@@ -20,6 +21,7 @@ class IncomingDataHandler {
 	private:
 
 	readStatus readIncomingData(Client& client);
+	void parseCommands(Client& client);
 
 	public:
 

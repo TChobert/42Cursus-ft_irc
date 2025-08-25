@@ -4,6 +4,8 @@ IncomingDataHandler::IncomingDataHandler(void) {}
 
 IncomingDataHandler::~IncomingDataHandler(void) {}
 
+
+
 readStatus IncomingDataHandler::readIncomingData(Client& client) {
 
 	char readContent[1024];
@@ -14,6 +16,13 @@ readStatus IncomingDataHandler::readIncomingData(Client& client) {
 		return (READY_TO_PARSE);
 	} else if (bytesRead == EOF) {
 		return (DISCONNECTED);
+	} else {
+		if (errno == EWOULDBLOCK || errno == EAGAIN)
+			return (NOT_READY);
+		else {
+			perror("recv");
+			return (DISCONNECTED);
+		}
 	}
 }
 
@@ -28,5 +37,7 @@ void IncomingDataHandler::handle(Client& client) {
 		case DISCONNECTED:
 			disconnectClient(client);
 			break;
+		case NOT_READY:
+			return ;
 	}
 }
