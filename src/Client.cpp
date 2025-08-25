@@ -1,10 +1,18 @@
 #include "Client.hpp"
 
-Client::Client(int fd) : _fd(fd) {}
+Client::Client(int fd) : _fd(fd), _isAuthentificated(false), _isRegistered(false) {}
 
-Client::~Client(void) {} // TO COMPLETE
+Client::~Client(void) {
+	close(_fd);
+} // TO COMPLETE
+
+const char * Client::CRLF = "\r\n";
 
 ///// SETTERS /////
+
+int& Client::getFd(void) {
+	return (_fd);
+}
 
 const std::string& Client::getNickname(void) const {
 	return (_nickname);
@@ -34,6 +42,14 @@ std::string Client::getPrefix(void) const {
 	return (":" + _nickname + "!" + _username + "@" + _hostname);
 }
 
+const std::string& Client::getInputBuffer(void) const {
+	return (_inputBuffer);
+}
+
+const std::string& Client::getOutputBuffer(void) const {
+	return (_outputBuffer);
+}
+
 ///// SETTERS /////
 
 void Client::setNickname(const std::string& nick) {
@@ -58,4 +74,20 @@ void Client::setAuthStatus(bool auth) {
 
 void Client::setRegistered(bool reg) {
 	_isRegistered =  reg;
+}
+
+void Client::appendInput(const char *input, const size_t len) {
+	_inputBuffer.append(input, len);
+}
+
+void Client::enqueueOutput(const std::string& output) {
+	_outputBuffer += output + CRLF;
+}
+
+void Client::flushInputBuffer(void) {
+	_inputBuffer.clear();
+}
+
+void Client::flushOutputBuffer(void) {
+	_outputBuffer.clear();
 }

@@ -53,12 +53,18 @@ int	Server::acceptClient(void) {
 	return (clientFd);
 }
 
+void Server::setClientID(const int clientFd) {
+
+	Client client(clientFd);
+	_clients[clientFd] = client;
+}
+
 void	Server::handleNewClient(void) {
 
 	try {
 		int	clientFd = acceptClient();
 		if (clientFd != -1) {
-			//setClientConversation(serverFd, clientFd);
+			setClientID(clientFd);
 			addClientToInterestList(clientFd);
 			std::cout << GREEN << "[client] =" << "= " << clientFd << " ==> is now connected with [SERVER]" RESET << std::endl;
 		}

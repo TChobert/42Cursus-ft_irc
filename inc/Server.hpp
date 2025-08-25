@@ -13,6 +13,8 @@
 #include <netinet/in.h>
 #include <cerrno>
 
+#include "Client.hpp"
+
 #define YELLOW "\033[33m"
 #define RED "\033[31m"
 #define GREEN "\033[32m"
@@ -20,8 +22,6 @@
 #define RESET "\033[0m"
 
 #define MAX_EVENTS 64
-
-class Client;
 
 class Server {
 
@@ -31,6 +31,7 @@ class Server {
 	int _serverSocket;
 	const std::string _pswd;
 	int _epollFd;
+	struct epoll_event _events[MAX_EVENTS];
 	std::map<int, Client> _clients;
 
 	public:
@@ -39,6 +40,7 @@ class Server {
 	~Server(void);
 
 	void run(void);
+	void handleNotifiedEvents(int fdsNumber);
 	void initServer(void);
 	void socketInitProcess(void);
 	void setSocketImmediatReuse(void);
@@ -50,6 +52,7 @@ class Server {
 	int acceptClient(void);
 	void setSocketNonBlocking(int fd);
 	void addClientToInterestList(int clientFd);
+	void setClientID(const int clientFd);
 	//void deleteClient(int clientFd);
 	//void deleteAllNetwork(void);
 
