@@ -132,7 +132,7 @@ void IncomingDataHandler::parseCommands(Client& client) {
 			addCommandToList(client, currentCommand);
 		}
 		else if (status == UNCOMPLETE_COMMAND) {
-			sendErrorMessage(currentCommand, client);
+			stackErrorMessage(currentCommand, client);
 			break ;
 		}
 	}
@@ -158,18 +158,17 @@ readStatus IncomingDataHandler::readIncomingData(Client& client) {
 	}
 }
 
-void IncomingDataHandler::handle(Client& client) {
+ExecutionStatus IncomingDataHandler::handle(Client& client) {
 
 	readStatus status = readIncomingData(client);
 
 	switch (status) {
 		case READY_TO_PARSE:
 			parseCommands(client);
-			break;
+			return (READY_TO_EXECUTE);
 		case DISCONNECTED:
-			disconnectClient(client);
-			break;
+			return (DISCONNECTION);
 		case NOT_READY:
-			return ;
+			return (NO_EXECUTION_NEEDED);
 	}
 }

@@ -7,6 +7,12 @@
 #include "authFlags.hpp"
 #include "Command.hpp"
 
+enum ExecutionStatus {
+	NO_EXECUTION_NEEDED,
+	READY_TO_EXECUTE,
+	DISCONNECTION
+};
+
 class Client {
 
 	private:
@@ -37,6 +43,7 @@ class Client {
 	const std::string& getUsername(void) const;
 	const std::string& getRealname(void) const;
 	const std::string& getHostname(void) const;
+	std::vector<Command> getCommands(void);
 	std::string& getInputBuffer(void);
 	std::string& getOutputBuffer(void);
 	std::string getPrefix(void) const;
