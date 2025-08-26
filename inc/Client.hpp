@@ -25,6 +25,7 @@ class Client {
 
 	bool _isAuthentificated;
 	bool _isRegistered;
+	bool _isResponsePending;
 
 	std::string _nickname;
 	std::string _username;
@@ -39,17 +40,19 @@ class Client {
 	~Client(void);
 
 	int& getFd(void);
+	bool getResponsePending(void) const;
 	const std::string& getNickname(void) const;
 	const std::string& getUsername(void) const;
 	const std::string& getRealname(void) const;
 	const std::string& getHostname(void) const;
-	std::vector<Command> getCommands(void);
+	std::vector<Command>& getCommands(void);
 	std::string& getInputBuffer(void);
 	std::string& getOutputBuffer(void);
 	std::string getPrefix(void) const;
 	bool isAuthentificated(void) const;
 	bool isRegistered(void) const;
 
+	void setResponsePending(bool mode);
 	void setNickname(const std::string& nick);
 	void setUsername(const std::string& username);
 	void setRealname(const std::string& realname);

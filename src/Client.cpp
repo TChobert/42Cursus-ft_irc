@@ -1,6 +1,6 @@
 #include "Client.hpp"
 
-Client::Client(int fd) : _fd(fd), _isAuthentificated(false), _isRegistered(false) {}
+Client::Client(int fd) : _fd(fd), _isAuthentificated(false), _isRegistered(false), _isResponsePending(false) {}
 
 Client::~Client(void) {
 	close(_fd);
@@ -8,10 +8,18 @@ Client::~Client(void) {
 
 const char * Client::CRLF = "\r\n";
 
-///// SETTERS /////
+///// GETTERS /////
 
 int& Client::getFd(void) {
 	return (_fd);
+}
+
+bool Client::getResponsePending(void) const {
+	return (_isResponsePending);
+}
+
+std::vector<Command>& Client::getCommands(void) {
+	return _commands;
 }
 
 const std::string& Client::getNickname(void) const {
@@ -52,6 +60,10 @@ std::string& Client::getOutputBuffer(void) {
 
 ///// SETTERS /////
 
+void Client::setResponsePending(bool mode) {
+	_isResponsePending = mode;
+}
+
 void Client::setNickname(const std::string& nick) {
 	_nickname = nick;
 }
@@ -82,6 +94,7 @@ void Client::appendInput(const char *input, const size_t len) {
 
 void Client::enqueueOutput(const std::string& output) {
 	_outputBuffer += output + CRLF;
+	setResponsePending(true);
 }
 
 void Client::flushInputBuffer(void) {
