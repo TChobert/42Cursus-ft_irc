@@ -39,7 +39,7 @@ class Client {
 	Client(int fd);
 	~Client(void);
 
-	int& getFd(void);
+	int getFd(void);
 	bool getResponsePending(void) const;
 	const std::string& getNickname(void) const;
 	const std::string& getUsername(void) const;

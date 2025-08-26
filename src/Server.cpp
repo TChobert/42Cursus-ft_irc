@@ -196,9 +196,27 @@ void Server::handleNotifiedEvents(int fdsNumber) {
 	}
 }
 
+void Server::updateEpollInterest(Client& client) {
+	struct epoll_event ev;
+	ev.data.fd = client.getFd();
+	ev.events = EPOLLIN;
+
+	if (client.getResponsePending())
+		ev.events |= EPOLLOUT;
+
+	if (epoll_ctl(_epollFd, EPOLL_CTL_MOD, client.getFd(), &ev) < 0) {
+		std::cerr << "Failed to update epoll interest for client " 
+					<< client.getPrefix() << std::endl;
+		//disconnectClient(client);
+	}
+}
+
 void Server::run(void) {
 
 	while (true) {
+
+		for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); ++it)
+			updateEpollInterest(it->second);
 		int fdsNumber = epoll_wait(_epollFd, _events, MAX_EVENTS, -1);
 		if (fdsNumber == -1) {
 			if (errno == EINTR) {

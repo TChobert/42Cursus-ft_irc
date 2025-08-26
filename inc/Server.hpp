@@ -53,6 +53,7 @@ class Server {
 	void setSocketNonBlocking(int fd);
 	void addClientToInterestList(int clientFd);
 	void setClientID(const int clientFd);
+	void updateEpollInterest(Client& client);
 	//void deleteClient(int clientFd);
 	//void deleteAllNetwork(void);
 

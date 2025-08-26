@@ -10,7 +10,7 @@ const char * Client::CRLF = "\r\n";
 
 ///// GETTERS /////
 
-int& Client::getFd(void) {
+int Client::getFd(void) {
 	return (_fd);
 }
 

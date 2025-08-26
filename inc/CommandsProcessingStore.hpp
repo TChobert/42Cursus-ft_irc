@@ -31,4 +31,5 @@ class CommandsProcessingStore {
 	void commandPass(Command& command, Client& client, std::map<int, Client>& clients);
 	void commandNick(Command& command, Client& client, std::map<int, Client>& clients);
 	void commandUser(Command& command, Client& client, std::map<int, Client>& clients);
+	void commandPrivmsg(Command& command, Client& client, std::map<int, Client>& clients);
 };

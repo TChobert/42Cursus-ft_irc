@@ -127,6 +127,10 @@ void CommandsProcessingStore::commandUser(Command& command, Client& client, std:
 	}
 }
 
+void CommandsProcessingStore::commandPrivmsg(Command& command, Client& client, std::map<int, Client>& clients) {
+
+}
+
 CommandsProcessingStore::CommandProcessPtr CommandsProcessingStore::getCommandProcess(Command& command) {
 
 	switch(command.getCommandType()) {
@@ -136,5 +140,9 @@ CommandsProcessingStore::CommandProcessPtr CommandsProcessingStore::getCommandPr
 			return (&CommandsProcessingStore::commandNick);
 		case CMD_USER:
 			return (&CommandsProcessingStore::commandUser);
+		// case CMD_JOIN:
+		// 	return (&CommandsProcessingStore::commandJoin);
+		case CMD_PRIVMSG:
+			return (&CommandsProcessingStore::commandPrivmsg);
 	}
 }
