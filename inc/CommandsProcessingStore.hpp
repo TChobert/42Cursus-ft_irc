@@ -11,9 +11,13 @@ class CommandsProcessingStore {
 	private:
 
 	const std::string& _serverPswd;
-	static const std::string _validFirstChars;
+	static const std::string _validNickChars;
 
 	bool checkNicknameValidity(const std::string& nickname);
+	bool isValidChar(const char c) const;
+	bool isAlreadyInUse(const std::string& nickname, const std::map<int, Client>& clients) const;
+	std::string getPrefix(const Client& client) const;
+	void sendWelcomeMessages(Client& client);
 
 	public:
 
@@ -26,4 +30,5 @@ class CommandsProcessingStore {
 	const std::string& getServerPswd(void) const;
 	void commandPass(Command& command, Client& client, std::map<int, Client>& clients);
 	void commandNick(Command& command, Client& client, std::map<int, Client>& clients);
+	void commandUser(Command& command, Client& client, std::map<int, Client>& clients);
 };

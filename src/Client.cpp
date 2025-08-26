@@ -1,6 +1,6 @@
 #include "Client.hpp"
 
-Client::Client(int fd) : _fd(fd), _isAuthentificated(false), _isRegistered(false), _isResponsePending(false) {}
+Client::Client(int fd) : _fd(fd), _isAuthentificated(false), _isRegistered(false), _isResponsePending(false), _nickname("*") {}
 
 Client::~Client(void) {
 	close(_fd);
@@ -56,6 +56,17 @@ std::string& Client::getInputBuffer(void) {
 
 std::string& Client::getOutputBuffer(void) {
 	return (_outputBuffer);
+}
+
+std::string Client::getLowerNickname(void) const {
+
+	std::string nick = getNickname();
+
+	for (size_t i = 0; i < nick.size(); ++i) {
+		if (nick[i] >= 'A' && nick[i] <= 'Z')
+			nick[i] = std::tolower(static_cast<unsigned char>(nick[i]));
+	}
+	return (nick);
 }
 
 ///// SETTERS /////
