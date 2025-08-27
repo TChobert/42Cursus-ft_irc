@@ -175,6 +175,14 @@ void Server::initServer(void) {
 
 ///// MAIN PROCESS /////
 
+void Server::handleOutgoingEvent(int fd) {
+
+	sendingStatus status = _outgoingDataHandler.handle(_clients[fd]);
+	if (status == ERROR) {
+		//disconnectClient(_clients[fd]);
+	}
+}
+
 void Server::handleIncomingEvent(int fd) {
 
 	ExecutionStatus status = _incomingDataHandler.handle(_clients[fd]);
@@ -199,6 +207,8 @@ void Server::handleNotifiedEvents(int fdsNumber) {
 			// 	handleClientDisconnection(currentFd);
 			} else if (currentEvent & EPOLLIN) {
 				handleIncomingEvent(currentFd);
+			} else if (currentEvent & EPOLLOUT) {
+				handleOutgoingEvent(currentFd);
 			}
 		}
 	}

@@ -16,6 +16,7 @@
 #include "Client.hpp"
 #include "IncomingDataHandler.hpp"
 #include "CommandsExecutor.hpp"
+#include "OutgoingDataHandler.hpp"
 
 #define YELLOW "\033[33m"
 #define RED "\033[31m"
@@ -37,6 +38,7 @@ class Server {
 	std::map<int, Client> _clients;
 
 	IncomingDataHandler _incomingDataHandler;
+	OutgoingDataHandler _outgoingDataHandler;
 	CommandsExecutor _executor;
 
 	public:
@@ -47,6 +49,7 @@ class Server {
 	void run(void);
 	void handleNotifiedEvents(int fdsNumber);
 	void handleIncomingEvent(int fd);
+	void handleOutgoingEvent(int fd);
 	void initServer(void);
 	void socketInitProcess(void);
 	void setSocketImmediatReuse(void);
