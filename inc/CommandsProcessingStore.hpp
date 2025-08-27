@@ -18,6 +18,7 @@ class CommandsProcessingStore {
 	bool isAlreadyInUse(const std::string& nickname, const std::map<int, Client>& clients) const;
 	std::string getPrefix(const Client& client) const;
 	void sendWelcomeMessages(Client& client);
+	std::string strToLower(std::string& str);
 
 	public:
 

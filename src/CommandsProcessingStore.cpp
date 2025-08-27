@@ -6,6 +6,16 @@ CommandsProcessingStore::~CommandsProcessingStore(void) {}
 
 const std::string CommandsProcessingStore::_validNickChars = "[]\\`^{}|";
 
+std::string CommandsProcessingStore::strToLower(std::string& str) {
+
+	std::string result = str;
+
+	for (size_t i = 0; i < result.size(); ++i) {
+		result[i] = std::tolower(result[i]);
+	}
+	return (result);
+}
+
 std::string CommandsProcessingStore::getPrefix(const Client& client) const {
 	return (client.isRegistered() ? client.getNickname() : "*");
 }
@@ -133,16 +143,34 @@ void CommandsProcessingStore::commandPrivmsg(Command& command, Client& client, s
 		client.enqueueOutput(":myserver 451 " + client.getPrefix() + " PRIVMSG :You have not registered");
 		return ;
 	}
-	std::string target = command.getParam(0);
+	std::vector<std::string> targets = command.getParams();
 	std::string message = command.getTrailing();
 
-	if (target.empty()) {
-		client.enqueueOutput(":myserver 411 " + client.getNickname() + " :No recipient given (PRIVMSG)");
+	if (targets.empty()) {
+		client.enqueueOutput(":myserver 411 " + client.getPrefix() + " :No recipient given (PRIVMSG)");
 		return ;
 	}
 	if (message.empty()) {
-		client.enqueueOutput(":myserver 412 " + client.getNickname() + " :No text to send");
+		client.enqueueOutput(":myserver 412 " + client.getPrefix() + " :No text to send");
 		return ;
+	}
+
+	for (std::vector<std::string>::iterator it = targets.begin(); it != targets.end(); ++it) {
+
+		std::string target = strToLower(*it);
+		bool found = false;
+
+		for (std::map<int, Client>::iterator cit = clients.begin(); cit != clients.end(); ++ cit) {
+			if (cit->second.getLowerNickname() == target) {
+				found = true;
+				std::string fullMsg = ":" + client.getPrefix() + " PRIVMSG " + *it + " :" + message;
+				cit->second.enqueueOutput(fullMsg);
+				break ;
+			}
+		}
+		if (!found) {
+			client.enqueueOutput(":myserver 401 " + client.getPrefix() + " " + *it + " :No such nick/channel");
+		}
 	}
 }
 
