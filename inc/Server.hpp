@@ -14,6 +14,8 @@
 #include <cerrno>
 
 #include "Client.hpp"
+#include "IncomingDataHandler.hpp"
+#include "CommandsExecutor.hpp"
 
 #define YELLOW "\033[33m"
 #define RED "\033[31m"
@@ -34,6 +36,9 @@ class Server {
 	struct epoll_event _events[MAX_EVENTS];
 	std::map<int, Client> _clients;
 
+	IncomingDataHandler _incomingDataHandler;
+	CommandsExecutor _executor;
+
 	public:
 
 	Server(const uint16_t port, const std::string pswd);
@@ -41,6 +46,7 @@ class Server {
 
 	void run(void);
 	void handleNotifiedEvents(int fdsNumber);
+	void handleIncomingEvent(int fd);
 	void initServer(void);
 	void socketInitProcess(void);
 	void setSocketImmediatReuse(void);
@@ -53,6 +59,7 @@ class Server {
 	void setSocketNonBlocking(int fd);
 	void addClientToInterestList(int clientFd);
 	void setClientID(const int clientFd);
+	void manageEpollInterests(void);
 	void updateEpollInterest(Client& client);
 	//void deleteClient(int clientFd);
 	//void deleteAllNetwork(void);

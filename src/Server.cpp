@@ -175,6 +175,16 @@ void Server::initServer(void) {
 
 ///// MAIN PROCESS /////
 
+void Server::handleIncomingEvent(int fd) {
+
+	ExecutionStatus status = _incomingDataHandler.handle(_clients[fd]);
+
+	if (status == READY_TO_EXECUTE) {
+		//executor
+	}
+	//else ?
+}
+
 void Server::handleNotifiedEvents(int fdsNumber) {
 
 	for (int i = 0; i < fdsNumber; ++i) {
@@ -185,18 +195,18 @@ void Server::handleNotifiedEvents(int fdsNumber) {
 		if (currentFd == _serverSocket) {
 			handleNewClient();
 		}
-		// else {
-			// if (currentEvent & (EPOLLHUP | EPOLLRDHUP | EPOLLERR)) {
+		else {
+			if (currentEvent & (EPOLLHUP | EPOLLRDHUP | EPOLLERR)) {
 			// 	handleClientDisconnection(currentFd);
-			// }
-			// else if (currentEvent & EPOLLIN) {
-			// 	handleClientData(currentFd);
-			// }
-		//}
+			} else if (currentEvent & EPOLLIN) {
+				handleIncomingEvent(currentFd);
+			}
+		}
 	}
 }
 
 void Server::updateEpollInterest(Client& client) {
+
 	struct epoll_event ev;
 	ev.data.fd = client.getFd();
 	ev.events = EPOLLIN;
@@ -211,12 +221,17 @@ void Server::updateEpollInterest(Client& client) {
 	}
 }
 
+void Server::manageEpollInterests(void) {
+
+	for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); ++it)
+			updateEpollInterest(it->second);
+}
+
 void Server::run(void) {
 
 	while (true) {
 
-		for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); ++it)
-			updateEpollInterest(it->second);
+		manageEpollInterests();
 		int fdsNumber = epoll_wait(_epollFd, _events, MAX_EVENTS, -1);
 		if (fdsNumber == -1) {
 			if (errno == EINTR) {
