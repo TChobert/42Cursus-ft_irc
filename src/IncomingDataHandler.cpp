@@ -26,14 +26,15 @@ void IncomingDataHandler::getCommandPrefix(std::string& line, Command& currentCo
 	}
 }
 
-void IncomingDataHandler::defineCommandType(Command& currentCommand, const std::string& commandKey) {
+commandParseStatus IncomingDataHandler::defineCommandType(Command& currentCommand, const std::string& commandKey) {
 
 	if (currentCommand._typesDictionary.count(commandKey)) {
 		currentCommand.setCommandType(currentCommand._typesDictionary[commandKey]);
 	} else {
 		currentCommand.setCommandType(CMD_UNKNOWN);
-		// stop process !!
+		return (UNKNOWN_COMMAND);
 	}
+	return (KNOWN_COMMAND);
 }
 
 commandParseStatus IncomingDataHandler::ensureCommandIsComplete(commandType type) {
@@ -65,8 +66,9 @@ void IncomingDataHandler::getCommand(std::string& line, Command& currentCommand,
 	size_t space = line.find(SPACE, index);
 	if (space == std::string::npos) {
 		commandKey = line. substr(index);
-		defineCommandType(currentCommand, commandKey);
-		status = ensureCommandIsComplete(currentCommand.getCommandType());
+		status = defineCommandType(currentCommand, commandKey);
+		if (status != UNKNOWN_COMMAND)
+			status = ensureCommandIsComplete(currentCommand.getCommandType());
 	} else {
 		commandKey = line.substr(index, space - index);
 		defineCommandType(currentCommand, commandKey);
@@ -125,14 +127,19 @@ void IncomingDataHandler::parseCommands(Client& client) {
 
 		getCommandPrefix(line, currentCommand, index);
 		getCommand(line, currentCommand, index, status);
+
 		if (status == IN_PROGRESS) {
 			getParamsAndTrailing(line, currentCommand, index, status);
 		}
-		if (status == COMPLETE_COMMAND) {
+		else if (status == COMPLETE_COMMAND) {
 			addCommandToList(client, currentCommand);
 		}
 		else if (status == UNCOMPLETE_COMMAND) {
-			stackErrorMessage(currentCommand, client);
+			client.enqueueOutput(":myserver 461 " + client.getPrefix() + " " + currentCommand.getCommand() + " :Not enough parameters");
+			break ;
+		}
+		else if (status == UNKNOWN_COMMAND) {
+			client.enqueueOutput(":myserver 421 " + client.getPrefix() + " " + currentCommand.getCommand() + " :Unknown command");
 			break ;
 		}
 	}

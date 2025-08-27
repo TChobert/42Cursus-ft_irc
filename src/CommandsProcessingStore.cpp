@@ -67,9 +67,10 @@ void CommandsProcessingStore::commandPass(Command& command, Client& client, std:
 	}
 }
 
-bool CommandsProcessingStore::isAlreadyInUse(const std::string& nickname, const std::map<int, Client>& clients) const {
+bool CommandsProcessingStore::isAlreadyInUse(std::string& nickname, const std::map<int, Client>& clients) const {
 
 	std::string lowerNick = nickname;
+
 	for (size_t i = 0; i < lowerNick.size(); ++i)
 		lowerNick[i] = std::tolower(static_cast<unsigned char>(lowerNick[i]));
 

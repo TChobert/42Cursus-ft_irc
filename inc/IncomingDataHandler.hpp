@@ -22,7 +22,9 @@ enum commandParseStatus {
 
 	IN_PROGRESS,
 	UNCOMPLETE_COMMAND,
-	COMPLETE_COMMAND
+	COMPLETE_COMMAND,
+	KNOWN_COMMAND,
+	UNKNOWN_COMMAND
 };
 
 class IncomingDataHandler {
@@ -34,7 +36,7 @@ class IncomingDataHandler {
 	void parseCommands(Client& client);
 	void getCommandPrefix(std::string& line, Command& currentCommand, size_t& index);
 	void getCommand(std::string& line, Command& currentCommand, size_t& index, commandParseStatus& status);
-	void defineCommandType(Command& currentCommand, const std::string& commandKey);
+	commandParseStatus defineCommandType(Command& currentCommand, const std::string& commandKey);
 	commandParseStatus ensureCommandIsComplete(commandType type);
 	void getParamsAndTrailing(std::string& line, Command& currentCommand, size_t& index, commandParseStatus& status);
 	void addCommandToList(Client& client, Command& command);
