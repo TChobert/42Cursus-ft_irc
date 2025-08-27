@@ -104,7 +104,7 @@ void CommandsProcessingStore::commandNick(Command& command, Client& client, std:
 void CommandsProcessingStore::commandUser(Command& command, Client& client, std::map<int, Client>& clients) {
 
 	if (!client.authProcessStatus._passValidated || !client.authProcessStatus._nickNameSet) {
-		//enqueue invalid order
+		client.enqueueOutput(":myserver 451 " + client.getPrefix() + " USER :You have not registered");
 		return ;
 	}
 	if (client.isRegistered()) {
@@ -129,6 +129,21 @@ void CommandsProcessingStore::commandUser(Command& command, Client& client, std:
 
 void CommandsProcessingStore::commandPrivmsg(Command& command, Client& client, std::map<int, Client>& clients) {
 
+	if (!client.isRegistered()) {
+		client.enqueueOutput(":myserver 451 " + client.getPrefix() + " PRIVMSG :You have not registered");
+		return ;
+	}
+	std::string target = command.getParam(0);
+	std::string message = command.getTrailing();
+
+	if (target.empty()) {
+		client.enqueueOutput(":myserver 411 " + client.getNickname() + " :No recipient given (PRIVMSG)");
+		return ;
+	}
+	if (message.empty()) {
+		client.enqueueOutput(":myserver 412 " + client.getNickname() + " :No text to send");
+		return ;
+	}
 }
 
 CommandsProcessingStore::CommandProcessPtr CommandsProcessingStore::getCommandProcess(Command& command) {

@@ -180,9 +180,8 @@ void Server::handleIncomingEvent(int fd) {
 	ExecutionStatus status = _incomingDataHandler.handle(_clients[fd]);
 
 	if (status == READY_TO_EXECUTE) {
-		//executor
+		_executor.execute(_clients[fd], _clients);
 	}
-	//else ?
 }
 
 void Server::handleNotifiedEvents(int fdsNumber) {

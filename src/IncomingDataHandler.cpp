@@ -145,7 +145,10 @@ readStatus IncomingDataHandler::readIncomingData(Client& client) {
 	ssize_t bytesRead = recv(client.getFd(), readContent, sizeof(readContent), 0);
 	if (bytesRead > 0) {
 		client.appendInput(readContent, bytesRead);
-		return (READY_TO_PARSE);
+		if (client.isCrlfInInput())
+			return (READY_TO_PARSE);
+		else
+			return (NOT_READY);
 	} else if (bytesRead == EOF) {
 		return (DISCONNECTED);
 	} else {

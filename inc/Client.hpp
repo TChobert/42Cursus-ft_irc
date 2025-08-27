@@ -52,6 +52,7 @@ class Client {
 	std::string getPrefix(void) const;
 	bool isAuthentificated(void) const;
 	bool isRegistered(void) const;
+	bool isCrlfInInput(void) const;
 
 	void setResponsePending(bool mode);
 	void setNickname(const std::string& nick);

@@ -69,6 +69,10 @@ std::string Client::getLowerNickname(void) const {
 	return (nick);
 }
 
+bool Client::isCrlfInInput(void) const {
+	return (_inputBuffer.find_first_of(CRLF) != std::string::npos);
+}
+
 ///// SETTERS /////
 
 void Client::setResponsePending(bool mode) {
