@@ -1,6 +1,6 @@
 #include "Server.hpp"
 
-Server::Server(const uint16_t port, const std::string pswd) : _port(port), _serverSocket(-1), _pswd(pswd) {}
+Server::Server(const uint16_t port, const std::string pswd) : _port(port), _serverSocket(-1), _pswd(pswd), _executor(pswd) {}
 
 Server::~Server(void) {}
 
