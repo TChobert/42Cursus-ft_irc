@@ -16,9 +16,10 @@ class CommandsProcessingStore {
 	bool checkNicknameValidity(const std::string& nickname);
 	bool isValidChar(const char c) const;
 	bool isAlreadyInUse(std::string& nickname, const std::map<int, Client>& clients) const;
-	std::string getPrefix(const Client& client) const;
+	std::string getReplyTarget(const Client& client) const;
 	void sendWelcomeMessages(Client& client);
 	std::string strToLower(std::string& str);
+	void privmsgTargetCheckup(const Client& sender, Client& target, const std::string& targetName, const std::string& message);
 
 	public:
 

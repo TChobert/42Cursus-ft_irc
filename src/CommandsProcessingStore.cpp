@@ -16,7 +16,7 @@ std::string CommandsProcessingStore::strToLower(std::string& str) {
 	return (result);
 }
 
-std::string CommandsProcessingStore::getPrefix(const Client& client) const {
+std::string CommandsProcessingStore::getReplyTarget(const Client& client) const {
 	return (client.isRegistered() ? client.getNickname() : "*");
 }
 
@@ -30,23 +30,16 @@ bool CommandsProcessingStore::isValidChar(char c) const {
 
 void CommandsProcessingStore::sendWelcomeMessages(Client& client) {
 
-}
+	const std::string nick = client.getNickname();
+	const std::string prefix = client.getPrefix();
 
-bool CommandsProcessingStore::checkNicknameValidity(const std::string& nickname) {
+	client.enqueueOutput(":myserver 001 " + nick + " :Welcome to the IRC network " + prefix);
 
-	char firstChar = nickname[0];
+	client.enqueueOutput(":myserver 002 " + nick + " :Your host is myserver, running version 1.0");
 
-	if (nickname.size() > 9)
-		return (false);
-	bool isLetter = (firstChar >= 'A' && firstChar <= 'Z') || (firstChar >= 'a' && firstChar <= 'z');
-	if (!isLetter && _validNickChars.find_first_of(firstChar) == std::string::npos) {
-		return (false);
-	}
-	for (size_t i = 1; i < nickname.size(); ++i) {
-		if (!isValidChar(nickname[i]))
-		return (false);
-	}
-	return (true);
+	client.enqueueOutput(":myserver 003 " + nick + " :This server was created Thu Aug 27 2025");
+
+	client.enqueueOutput(":myserver 004 " + nick + " myserver 1.0 o o");
 }
 
 void CommandsProcessingStore::commandPass(Command& command, Client& client, std::map<int, Client>& clients) {
@@ -65,6 +58,23 @@ void CommandsProcessingStore::commandPass(Command& command, Client& client, std:
 	} else {
 		client.enqueueOutput(":myserver 464 * :Password incorrect");
 	}
+}
+
+bool CommandsProcessingStore::checkNicknameValidity(const std::string& nickname) {
+
+	char firstChar = nickname[0];
+
+	if (nickname.size() > 9)
+		return (false);
+	bool isLetter = (firstChar >= 'A' && firstChar <= 'Z') || (firstChar >= 'a' && firstChar <= 'z');
+	if (!isLetter && _validNickChars.find_first_of(firstChar) == std::string::npos) {
+		return (false);
+	}
+	for (size_t i = 1; i < nickname.size(); ++i) {
+		if (!isValidChar(nickname[i]))
+		return (false);
+	}
+	return (true);
 }
 
 bool CommandsProcessingStore::isAlreadyInUse(std::string& nickname, const std::map<int, Client>& clients) const {
@@ -89,11 +99,11 @@ void CommandsProcessingStore::commandNick(Command& command, Client& client, std:
 	}
 	std::string nickname = command.getParam(0);
 	if (nickname.empty()) {
-		client.enqueueOutput(":myserver 461 " + client.getPrefix() + " NICK :not enough parameters");
+		client.enqueueOutput(":myserver 461 " + getReplyTarget(client) + " NICK :not enough parameters");
 		return ;
 	}
 	if (!checkNicknameValidity(nickname)) {
-		client.enqueueOutput(":myserver 432 " + client.getPrefix() + " " + nickname + " :Erroneous nickname");
+		client.enqueueOutput(":myserver 432 " + getReplyTarget(client) + " " + nickname + " :Erroneous nickname");
 		return ;
 	}
 	if (isAlreadyInUse(nickname, clients)) {
@@ -115,18 +125,18 @@ void CommandsProcessingStore::commandNick(Command& command, Client& client, std:
 void CommandsProcessingStore::commandUser(Command& command, Client& client, std::map<int, Client>& clients) {
 
 	if (!client.authProcessStatus._passValidated || !client.authProcessStatus._nickNameSet) {
-		client.enqueueOutput(":myserver 451 " + client.getPrefix() + " USER :You have not registered");
+		client.enqueueOutput(":myserver 451 " + getReplyTarget(client) + " USER :You have not registered");
 		return ;
 	}
 	if (client.isRegistered()) {
-		client.enqueueOutput(":myserver 462 " + client.getPrefix() + " :You may not reregister");
+		client.enqueueOutput(":myserver 462 " + getReplyTarget(client) + " :You may not reregister");
 		return;
 	}
 
 	std::vector<std::string> params = command.getParams();
 	std::string realName = command.getTrailing();
 	if (params.size() < 3 || realName.empty()) {
-		client.enqueueOutput(":myserver 461 " + client.getPrefix() + " USER :Not enough parameters");
+		client.enqueueOutput(":myserver 461 " + getReplyTarget(client) + " USER :Not enough parameters");
 		return ;
 	}
 	client.setUsername(command.getParam(0));
@@ -138,21 +148,29 @@ void CommandsProcessingStore::commandUser(Command& command, Client& client, std:
 	}
 }
 
+void CommandsProcessingStore::privmsgTargetCheckup(const Client& sender, Client& target, const std::string& targetName, const std::string& message) {
+
+	if (target.isAuthentificated()) {
+		std::string fullMsg = ":" + sender.getPrefix() + " PRIVMSG " + targetName + " :" + message;
+		target.enqueueOutput(fullMsg);
+	}
+}
+
 void CommandsProcessingStore::commandPrivmsg(Command& command, Client& client, std::map<int, Client>& clients) {
 
 	if (!client.isRegistered()) {
-		client.enqueueOutput(":myserver 451 " + client.getPrefix() + " PRIVMSG :You have not registered");
+		client.enqueueOutput(":myserver 451 " + getReplyTarget(client) + " PRIVMSG :You have not registered");
 		return ;
 	}
 	std::vector<std::string> targets = command.getParams();
 	std::string message = command.getTrailing();
 
 	if (targets.empty()) {
-		client.enqueueOutput(":myserver 411 " + client.getPrefix() + " :No recipient given (PRIVMSG)");
+		client.enqueueOutput(":myserver 411 " + getReplyTarget(client) + " :No recipient given (PRIVMSG)");
 		return ;
 	}
 	if (message.empty()) {
-		client.enqueueOutput(":myserver 412 " + client.getPrefix() + " :No text to send");
+		client.enqueueOutput(":myserver 412 " + getReplyTarget(client) + " :No text to send");
 		return ;
 	}
 
@@ -164,13 +182,12 @@ void CommandsProcessingStore::commandPrivmsg(Command& command, Client& client, s
 		for (std::map<int, Client>::iterator cit = clients.begin(); cit != clients.end(); ++ cit) {
 			if (cit->second.getLowerNickname() == target) {
 				found = true;
-				std::string fullMsg = ":" + client.getPrefix() + " PRIVMSG " + *it + " :" + message;
-				cit->second.enqueueOutput(fullMsg);
+				privmsgTargetCheckup(client, cit->second, *it, message);
 				break ;
 			}
 		}
 		if (!found) {
-			client.enqueueOutput(":myserver 401 " + client.getPrefix() + " " + *it + " :No such nick/channel");
+			client.enqueueOutput(":myserver 401 " + getReplyTarget(client) + " " + *it + " :No such nick/channel");
 		}
 	}
 }
