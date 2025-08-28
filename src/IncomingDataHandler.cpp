@@ -40,18 +40,18 @@ commandParseStatus IncomingDataHandler::defineCommandType(Command& currentComman
 commandParseStatus IncomingDataHandler::ensureCommandIsComplete(commandType type) {
 
   switch (type) {
-		case CMD_QUIT:
+	//	case CMD_QUIT:
 		//case CMD_PING:
 			return COMPLETE_COMMAND;
 		case CMD_PASS:
 		case CMD_NICK:
 		case CMD_USER:
-		case CMD_JOIN:
+		//case CMD_JOIN:
 		case CMD_PRIVMSG:
-		case CMD_KICK:
-		case CMD_INVITE:
-		case CMD_TOPIC:
-		case CMD_MODE:
+	//	case CMD_KICK:
+	//	case CMD_INVITE:
+	//	case CMD_TOPIC:
+	//	case CMD_MODE:
 			return UNCOMPLETE_COMMAND;
 		default:
 			return UNCOMPLETE_COMMAND;
@@ -87,7 +87,7 @@ void splitAndAddParams(std::string params, Command& currentCommand) {
 	}
 }
 
-void IncomingDataHandler::getParamsAndTrailing(std::string& line, Command& currentCommand, size_t& index, commandParseStatus& status) {
+void IncomingDataHandler::getParamsAndTrailing(std::string& line, Command& currentCommand, size_t& index) {
 
 	trimSpaces(line);
 	size_t trailingOperator = line.find(':', index);
@@ -129,7 +129,7 @@ void IncomingDataHandler::parseCommands(Client& client) {
 		getCommand(line, currentCommand, index, status);
 
 		if (status == IN_PROGRESS) {
-			getParamsAndTrailing(line, currentCommand, index, status);
+			getParamsAndTrailing(line, currentCommand, index);
 		}
 		else if (status == COMPLETE_COMMAND) {
 			addCommandToList(client, currentCommand);
@@ -156,7 +156,7 @@ readStatus IncomingDataHandler::readIncomingData(Client& client) {
 			return (READY_TO_PARSE);
 		else
 			return (NOT_READY);
-	} else if (bytesRead == EOF) {
+	} else if (bytesRead == EOF_CLIENT) {
 		return (DISCONNECTED);
 	} else {
 		if (errno == EWOULDBLOCK || errno == EAGAIN)

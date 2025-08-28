@@ -44,19 +44,21 @@ void CommandsProcessingStore::sendWelcomeMessages(Client& client) {
 
 void CommandsProcessingStore::commandPass(Command& command, Client& client, std::map<int, Client>& clients) {
 
+	(void)clients;
+
 	if (client.authProcessStatus._passValidated == true) {
 		 client.enqueueOutput(":myserver 462 * :You may not reregister");
 		return ;
 	}
 	std::string pswd = command.getParam(0);
 	if (pswd.empty()) {
-		 client.enqueueOutput(":myserver 461 * PASS :Not enough parameters");
+		 client.enqueueOutput(":myserver 461 " + getReplyTarget(client) + " PASS :Not enough parameters");
 		return ;
 	}
 	if (pswd == getServerPswd()) {
 		client.authProcessStatus._passValidated = true;
 	} else {
-		client.enqueueOutput(":myserver 464 * :Password incorrect");
+		client.enqueueOutput(":myserver 464 " + getReplyTarget(client) + " :Password incorrect");
 	}
 }
 
@@ -123,6 +125,8 @@ void CommandsProcessingStore::commandNick(Command& command, Client& client, std:
 }
 
 void CommandsProcessingStore::commandUser(Command& command, Client& client, std::map<int, Client>& clients) {
+
+	(void)clients;
 
 	if (!client.authProcessStatus._passValidated || !client.authProcessStatus._nickNameSet) {
 		client.enqueueOutput(":myserver 451 " + getReplyTarget(client) + " USER :You have not registered");

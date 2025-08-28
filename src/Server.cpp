@@ -56,7 +56,7 @@ int	Server::acceptClient(void) {
 void Server::setClientID(const int clientFd) {
 
 	Client client(clientFd);
-	_clients[clientFd] = client;
+	_clients.insert(std::make_pair(clientFd, client));
 }
 
 void	Server::handleNewClient(void) {
@@ -89,12 +89,12 @@ void Server::setSocketNonBlocking(void) {
 	int	flags = fcntl(_serverSocket, F_GETFL, 0);
 	if (flags < 0) {
 		std::ostringstream	oss;
-		oss << "fcntl failed on server socket: " << socket << " while setting it nonblocking";
+		oss << "fcntl failed on server socket: " << _serverSocket << " while setting it nonblocking";
 		throw std::runtime_error(oss.str());
 	}
 	if (fcntl(_serverSocket, F_SETFL, flags | O_NONBLOCK) == -1) {
 		std::ostringstream	oss;
-		oss << "fcntl failed on client: " << socket << " while setting it nonblocking";
+		oss << "fcntl failed on client: " << _serverSocket << " while setting it nonblocking";
 		throw std::runtime_error(oss.str());
 	}
 }
@@ -140,7 +140,7 @@ void Server::addSocketToEpoll(void) {
 	ev.data.fd = _serverSocket;
 	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, _serverSocket, &ev) < 0) {
 		std::ostringstream	oss;
-		oss << "Failed to add socket: " << socket << ". Closing it.";
+		oss << "Failed to add socket: " << _serverSocket << ". Closing it.";
 		throw std::runtime_error(oss.str());
 	}
 }
@@ -177,7 +177,7 @@ void Server::initServer(void) {
 
 void Server::handleOutgoingEvent(int fd) {
 
-	sendingStatus status = _outgoingDataHandler.handle(_clients[fd]);
+	sendingStatus status = _outgoingDataHandler.handle(_clients.at(fd));
 	if (status == ERROR) {
 		//disconnectClient(_clients[fd]);
 	}
@@ -185,10 +185,10 @@ void Server::handleOutgoingEvent(int fd) {
 
 void Server::handleIncomingEvent(int fd) {
 
-	ExecutionStatus status = _incomingDataHandler.handle(_clients[fd]);
+	ExecutionStatus status = _incomingDataHandler.handle(_clients.at(fd));
 
 	if (status == READY_TO_EXECUTE) {
-		_executor.execute(_clients[fd], _clients);
+		_executor.execute(_clients.at(fd), _clients);
 	}
 }
 

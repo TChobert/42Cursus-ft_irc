@@ -3,6 +3,8 @@
 #include <iostream>
 #include <string>
 #include <exception>
+#include <stdint.h>
+#include <stdlib.h>
 
 struct serverLaunchInfo {
 	uint16_t port;
@@ -21,7 +23,7 @@ class ProgramInputParser {
 	ProgramInputParser(void);
 	~ProgramInputParser(void);
 
-	serverLaunchInfo parse(std::string port, std::string pswd);
+	void parse(std::string port, std::string pswd, serverLaunchInfo& info);
 
 	class InvalidPortException : public std::exception {
 		virtual const char * what() const throw();

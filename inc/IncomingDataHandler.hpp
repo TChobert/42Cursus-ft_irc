@@ -5,10 +5,12 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sstream>
+#include <errno.h>
+#include <cstdio>
 
 #include "Client.hpp"
 
-#define EOF 0
+#define EOF_CLIENT 0
 #define SPACE ' '
 
 enum readStatus {
@@ -38,7 +40,7 @@ class IncomingDataHandler {
 	void getCommand(std::string& line, Command& currentCommand, size_t& index, commandParseStatus& status);
 	commandParseStatus defineCommandType(Command& currentCommand, const std::string& commandKey);
 	commandParseStatus ensureCommandIsComplete(commandType type);
-	void getParamsAndTrailing(std::string& line, Command& currentCommand, size_t& index, commandParseStatus& status);
+	void getParamsAndTrailing(std::string& line, Command& currentCommand, size_t& index);
 	void addCommandToList(Client& client, Command& command);
 	void trimSpaces(std::string& str);
 
