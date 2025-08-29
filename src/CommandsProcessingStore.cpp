@@ -56,6 +56,22 @@ void CommandsProcessingStore::commandCap(Command& command, Client& client, std::
 	client.enqueueOutput(":myserver CAP * LS");
 }
 
+void CommandsProcessingStore::commandPing(Command& command, Client& client, std::map<int, Client>& clients) {
+
+	(void)clients;
+	std::string token;
+	if (!command.getParams().empty())
+		token = command.getParams()[0];
+	else if (!command.getTrailing().empty())
+		token = command.getTrailing();
+	else {
+		client.enqueueOutput(":myserver 409 " + getReplyTarget(client) + " :No origin specified");
+		return ;
+	 }
+
+	client.enqueueOutput("PONG " + token);
+}
+
 void CommandsProcessingStore::commandPass(Command& command, Client& client, std::map<int, Client>& clients) {
 
 	(void)clients;
@@ -219,6 +235,8 @@ CommandsProcessingStore::CommandProcessPtr CommandsProcessingStore::getCommandPr
 	switch(command.getCommandType()) {
 		case CMD_CAP:
 			return (&CommandsProcessingStore::commandCap);
+		case CMD_PING:
+			return (&CommandsProcessingStore::commandPing);
 		case CMD_PASS:
 			return (&CommandsProcessingStore::commandPass);
 		case CMD_NICK:

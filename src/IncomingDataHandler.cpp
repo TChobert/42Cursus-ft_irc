@@ -32,6 +32,10 @@ commandParseStatus IncomingDataHandler::defineCommandType(Command& currentComman
 		currentCommand.setCommandType(CMD_CAP);
 		return KNOWN_COMMAND;
 	}
+	else if (commandKey == "PING") {
+		currentCommand.setCommandType(CMD_PING);
+		return KNOWN_COMMAND;
+	}
 	else if (commandKey == "PASS") {
 		currentCommand.setCommandType(CMD_PASS);
 		return KNOWN_COMMAND;
