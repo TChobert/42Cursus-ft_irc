@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <stdexcept>
+#include <iostream>
 
 enum commandType {
 	CMD_UNKNOWN = 0,
@@ -44,6 +45,7 @@ class Command {
 	const std::string& getParam(size_t position) const;
 	const std::vector<std::string>& getParams(void) const;
 	const std::string& getTrailing(void) const;
+	void printCommand(void) const;
 
 	// SETTERS
 

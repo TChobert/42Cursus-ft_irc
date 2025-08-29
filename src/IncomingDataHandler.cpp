@@ -28,14 +28,38 @@ void IncomingDataHandler::getCommandPrefix(std::string& line, Command& currentCo
 
 commandParseStatus IncomingDataHandler::defineCommandType(Command& currentCommand, const std::string& commandKey) {
 
-	if (currentCommand._typesDictionary.count(commandKey)) {
-		currentCommand.setCommandType(currentCommand._typesDictionary[commandKey]);
-	} else {
+	if (commandKey == "PASS") {
+		currentCommand.setCommandType(CMD_PASS);
+		return KNOWN_COMMAND;
+	} 
+	else if (commandKey == "NICK") {
+		currentCommand.setCommandType(CMD_NICK);
+		return KNOWN_COMMAND;
+	} 
+	else if (commandKey == "USER") {
+		currentCommand.setCommandType(CMD_USER);
+		return KNOWN_COMMAND;
+	} 
+	else if (commandKey == "PRIVMSG") {
+		currentCommand.setCommandType(CMD_PRIVMSG);
+		return KNOWN_COMMAND;
+	} 
+	else {
 		currentCommand.setCommandType(CMD_UNKNOWN);
-		return (UNKNOWN_COMMAND);
+		return UNKNOWN_COMMAND;
 	}
-	return (KNOWN_COMMAND);
 }
+
+// commandParseStatus IncomingDataHandler::defineCommandType(Command& currentCommand, const std::string& commandKey) {
+
+// 	if (currentCommand._typesDictionary.count(commandKey)) {
+// 		currentCommand.setCommandType(currentCommand._typesDictionary[commandKey]);
+// 	} else {
+// 		currentCommand.setCommandType(CMD_UNKNOWN);
+// 		return (UNKNOWN_COMMAND);
+// 	}
+// 	return (KNOWN_COMMAND);
+// }
 
 commandParseStatus IncomingDataHandler::ensureCommandIsComplete(commandType type) {
 
@@ -63,6 +87,7 @@ void IncomingDataHandler::getCommand(std::string& line, Command& currentCommand,
 	std::string commandKey;
 
 	trimSpaces(line);
+	std::cout << "LINE == " << line << std::endl;
 	size_t space = line.find(SPACE, index);
 	if (space == std::string::npos) {
 		commandKey = line. substr(index);
@@ -105,21 +130,33 @@ void IncomingDataHandler::getParamsAndTrailing(std::string& line, Command& curre
 }
 
 void IncomingDataHandler::addCommandToList(Client& client, Command& command) {
+	std::cout << "FUNCTION ADD TO COMMAND LIST" << std::endl;
+
+	command.printCommand();
 	client.addCommand(command);
 }
 
 void IncomingDataHandler::parseCommands(Client& client) {
 
+	std::cout << "FUNCTION PARSE COMMANDS" << std::endl;
 	std::string& buffer = client.getInputBuffer();
+	std::cout << "Input buffer = " << buffer << std::endl;
+	std::cout << "Buffer size = " << buffer.size() << std::endl;
+	for (size_t i = 0; i < buffer.size(); i++) {
+		std::cout << i << ": " << std::hex << (int)(unsigned char)buffer[i] << std::dec << std::endl;
+	}
 	size_t pos;
 
+	pos = buffer.find(CRLF);
+	std::cout << "pos = " << pos << std::endl;
 	while ((pos = buffer.find(CRLF)) != std::string::npos) {
 
 		commandParseStatus status = IN_PROGRESS;
 		std::string line = buffer.substr(0, pos);
 		buffer.erase(0, pos + 2);
 
-		if (line.empty())
+		std::cout << "Current line = " << line << std::endl;
+ 		if (line.empty())
 			continue;
 
 		Command currentCommand;
@@ -130,6 +167,7 @@ void IncomingDataHandler::parseCommands(Client& client) {
 
 		if (status == IN_PROGRESS) {
 			getParamsAndTrailing(line, currentCommand, index);
+			addCommandToList(client, currentCommand);
 		}
 		else if (status == COMPLETE_COMMAND) {
 			addCommandToList(client, currentCommand);
@@ -149,11 +187,14 @@ readStatus IncomingDataHandler::readIncomingData(Client& client) {
 
 	char readContent[1024];
 
+	std::cout << "FUNCTION READ INCOMING DATA" << std::endl;
 	ssize_t bytesRead = recv(client.getFd(), readContent, sizeof(readContent), 0);
 	if (bytesRead > 0) {
 		client.appendInput(readContent, bytesRead);
-		if (client.isCrlfInInput())
+		if (client.isCrlfInInput()) {
+			std::cout << "Ready to parse" << std::endl;
 			return (READY_TO_PARSE);
+		}
 		else
 			return (NOT_READY);
 	} else if (bytesRead == EOF_CLIENT) {
@@ -170,6 +211,7 @@ readStatus IncomingDataHandler::readIncomingData(Client& client) {
 
 ExecutionStatus IncomingDataHandler::handle(Client& client) {
 
+	std::cout << "FUNCTION HANDLE INCOMING DATA" << std::endl;
 	readStatus status = readIncomingData(client);
 
 	switch (status) {

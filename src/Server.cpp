@@ -162,7 +162,7 @@ void Server::initServer(void) {
 	if (_serverSocket >= 0 && _epollFd >= 0) {
 		try {
 			socketInitProcess();
-			std::cout << YELLOW << "[SERVER] :: is ready to communicate!" << RESET << std::endl;
+			std::cout << YELLOW << "[SERVER] <::> is ready to communicate!" << RESET << std::endl;
 		}
 		catch (const std::exception& e) {
 			close(_serverSocket);
@@ -196,6 +196,7 @@ void Server::handleNotifiedEvents(int fdsNumber) {
 
 	for (int i = 0; i < fdsNumber; ++i) {
 
+		std::cout << "HANDLE" << std::endl;
 		int currentFd = _events[i].data.fd;
 		uint32_t currentEvent = _events[i].events;
 
@@ -206,6 +207,7 @@ void Server::handleNotifiedEvents(int fdsNumber) {
 			if (currentEvent & (EPOLLHUP | EPOLLRDHUP | EPOLLERR)) {
 			// 	handleClientDisconnection(currentFd);
 			} else if (currentEvent & EPOLLIN) {
+				std::cout << "INCOMING" << std::endl;
 				handleIncomingEvent(currentFd);
 			} else if (currentEvent & EPOLLOUT) {
 				handleOutgoingEvent(currentFd);
@@ -216,16 +218,20 @@ void Server::handleNotifiedEvents(int fdsNumber) {
 
 void Server::updateEpollInterest(Client& client) {
 
+	int clientFd = client.getFd();
+	std::cout << "CLIENT FD = " << clientFd << std::endl;
 	struct epoll_event ev;
-	ev.data.fd = client.getFd();
+	ev.data.fd = clientFd;
 	ev.events = EPOLLIN;
 
-	if (client.getResponsePending())
+	if (client.getResponsePending() && !client.getOutputBuffer().empty()) {
+		std::cout << "RESPONSE PENDING" << std::endl;
 		ev.events |= EPOLLOUT;
+	}
 
-	if (epoll_ctl(_epollFd, EPOLL_CTL_MOD, client.getFd(), &ev) < 0) {
+	if (epoll_ctl(_epollFd, EPOLL_CTL_MOD, clientFd, &ev) < 0) {
 		std::cerr << "Failed to update epoll interest for client " 
-					<< client.getPrefix() << std::endl;
+				<< client.getPrefix() << std::endl;
 		//disconnectClient(client);
 	}
 }
@@ -242,6 +248,7 @@ void Server::run(void) {
 
 		manageEpollInterests();
 		int fdsNumber = epoll_wait(_epollFd, _events, MAX_EVENTS, -1);
+		std::cout << "FDS NUMBER == " << fdsNumber << " " << std::endl;
 		if (fdsNumber == -1) {
 			if (errno == EINTR) {
 				continue ;

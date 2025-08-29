@@ -40,6 +40,18 @@ const std::string& Command::getTrailing(void) const {
 	return (_trailing);
 }
 
+void Command::printCommand(void) const {
+
+	std::cout << "==> COMMAND ==>" << std::endl;
+	std::cout << "Command PREFIX = " << getPrefix() << std::endl;
+	std::cout << "Command type = " << getCommand();
+	std::cout << "Command PARAMS = " << std::endl;
+	for (size_t i = 0; i < _params.size(); ++ i) {
+		std::cout << _params[i] << std::endl;
+	}
+	std::cout << "COMMAND TRAILING = " << getTrailing() << std::endl;
+}
+
 // SETTERS
 
 void Command::initTypesDicitonary(void) {

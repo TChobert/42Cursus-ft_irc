@@ -46,6 +46,7 @@ void CommandsProcessingStore::commandPass(Command& command, Client& client, std:
 
 	(void)clients;
 
+	std::cout << "Command PASS" <<std::endl;
 	if (client.authProcessStatus._passValidated == true) {
 		 client.enqueueOutput(":myserver 462 * :You may not reregister");
 		return ;
@@ -95,6 +96,7 @@ bool CommandsProcessingStore::isAlreadyInUse(std::string& nickname, const std::m
 
 void CommandsProcessingStore::commandNick(Command& command, Client& client, std::map<int, Client>& clients) {
 
+	std::cout << "Command NICK" <<std::endl;
 	if (!client.authProcessStatus._passValidated) {
 		client.enqueueOutput(":myserver 451 NICK :You have not registered");
 		return ;
@@ -128,6 +130,7 @@ void CommandsProcessingStore::commandUser(Command& command, Client& client, std:
 
 	(void)clients;
 
+	std::cout << "Command USER" <<std::endl;
 	if (!client.authProcessStatus._passValidated || !client.authProcessStatus._nickNameSet) {
 		client.enqueueOutput(":myserver 451 " + getReplyTarget(client) + " USER :You have not registered");
 		return ;
@@ -198,6 +201,7 @@ void CommandsProcessingStore::commandPrivmsg(Command& command, Client& client, s
 
 CommandsProcessingStore::CommandProcessPtr CommandsProcessingStore::getCommandProcess(Command& command) {
 
+	std::cout << "FUNCTION GET COMMAND PROCESS" << std::endl;
 	switch(command.getCommandType()) {
 		case CMD_PASS:
 			return (&CommandsProcessingStore::commandPass);
@@ -209,5 +213,7 @@ CommandsProcessingStore::CommandProcessPtr CommandsProcessingStore::getCommandPr
 		// 	return (&CommandsProcessingStore::commandJoin);
 		case CMD_PRIVMSG:
 			return (&CommandsProcessingStore::commandPrivmsg);
+		case CMD_UNKNOWN:
+			return NULL;
 	}
 }

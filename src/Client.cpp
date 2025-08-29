@@ -2,9 +2,7 @@
 
 Client::Client(int fd) : _fd(fd), _isAuthentificated(false), _isRegistered(false), _isResponsePending(false), _nickname("*") {}
 
-Client::~Client(void) {
-	close(_fd);
-} // TO COMPLETE
+Client::~Client(void) {} // TO COMPLETE
 
 const char * Client::CRLF = "\r\n";
 

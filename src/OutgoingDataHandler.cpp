@@ -5,10 +5,15 @@ OutgoingDataHandler::OutgoingDataHandler(void) {}
 OutgoingDataHandler::~OutgoingDataHandler(void) {}
 
 sendingStatus OutgoingDataHandler::handle(Client& client) {
+
+	std::cout << "SENDING FUNCTION !!!" << std::endl;
+
 	std::string &dataToSend = client.getOutputBuffer();
 
-	if (dataToSend.empty())
+	if (dataToSend.empty()) {
+		client.setResponsePending(false);
 		return (EVERYTHING_SENT);
+	}
 
 	ssize_t sent = send(client.getFd(), dataToSend.c_str(), dataToSend.size(), 0);
 	if (sent > 0) {
