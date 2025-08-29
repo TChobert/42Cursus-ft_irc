@@ -9,7 +9,6 @@ sendingStatus OutgoingDataHandler::handle(Client& client) {
 	std::cout << "SENDING FUNCTION !!!" << std::endl;
 
 	std::string &dataToSend = client.getOutputBuffer();
-
 	if (dataToSend.empty()) {
 		client.setResponsePending(false);
 		return (EVERYTHING_SENT);

@@ -188,7 +188,7 @@ void CommandsProcessingStore::commandUser(Command& command, Client& client, std:
 void CommandsProcessingStore::privmsgTargetCheckup(const Client& sender, Client& target, const std::string& targetName, const std::string& message) {
 
 	if (target.isRegistered()) {
-		std::string fullMsg = ":" + sender.getPrefix() + " PRIVMSG " + targetName + " :" + message;
+		std::string fullMsg = sender.getPrefix() + " PRIVMSG " + targetName + " :" + message;
 		target.enqueueOutput(fullMsg);
 	}
 }

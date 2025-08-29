@@ -73,7 +73,7 @@ commandParseStatus IncomingDataHandler::ensureCommandIsComplete(commandType type
 
   switch (type) {
 	//	case CMD_QUIT:
-		//case CMD_PING:
+		case CMD_PING:
 			return COMPLETE_COMMAND;
 		case CMD_PASS:
 		case CMD_NICK:
