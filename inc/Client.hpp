@@ -23,7 +23,6 @@ class Client {
 	std::string _outputBuffer;
 	std::vector<Command> _commands;
 
-	bool _isAuthentificated;
 	bool _isRegistered;
 	bool _isResponsePending;
 

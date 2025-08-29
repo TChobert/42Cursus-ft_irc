@@ -8,6 +8,7 @@
 
 enum commandType {
 	CMD_UNKNOWN = 0,
+	CMD_CAP,
 	CMD_PASS,
 	CMD_NICK,
 	CMD_USER,

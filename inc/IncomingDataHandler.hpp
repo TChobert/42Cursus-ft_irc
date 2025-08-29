@@ -36,6 +36,8 @@ class IncomingDataHandler {
 	static const char * CRLF;
 	readStatus readIncomingData(Client& client);
 	void parseCommands(Client& client);
+	void extractCurrentCommand(std::string& line, Command& currentCommand, size_t& index, commandParseStatus& status);
+	void saveCurrentCommand(Client& client, Command& command, commandParseStatus& status);
 	void getCommandPrefix(std::string& line, Command& currentCommand, size_t& index);
 	void getCommand(std::string& line, Command& currentCommand, size_t& index, commandParseStatus& status);
 	commandParseStatus defineCommandType(Command& currentCommand, const std::string& commandKey);

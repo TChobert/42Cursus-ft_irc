@@ -42,6 +42,20 @@ void CommandsProcessingStore::sendWelcomeMessages(Client& client) {
 	client.enqueueOutput(":myserver 004 " + nick + " myserver 1.0 o o");
 }
 
+void CommandsProcessingStore::unknownCommand(Command& command, Client& client, std::map<int, Client>& clients) {
+
+	(void)clients;
+	std::cerr << "[ERROR] Unknown or unregistered command: " << command.getCommand() << std::endl;
+	client.enqueueOutput(":myserver 421 " + client.getPrefix() + " " + command.getCommand() + " :Unknown command");
+}
+
+void CommandsProcessingStore::commandCap(Command& command, Client& client, std::map<int, Client>& clients) {
+
+	(void)clients;
+	(void)command;
+	client.enqueueOutput(":myserver CAP * LS");
+}
+
 void CommandsProcessingStore::commandPass(Command& command, Client& client, std::map<int, Client>& clients) {
 
 	(void)clients;
@@ -157,7 +171,7 @@ void CommandsProcessingStore::commandUser(Command& command, Client& client, std:
 
 void CommandsProcessingStore::privmsgTargetCheckup(const Client& sender, Client& target, const std::string& targetName, const std::string& message) {
 
-	if (target.isAuthentificated()) {
+	if (target.isRegistered()) {
 		std::string fullMsg = ":" + sender.getPrefix() + " PRIVMSG " + targetName + " :" + message;
 		target.enqueueOutput(fullMsg);
 	}
@@ -203,6 +217,8 @@ CommandsProcessingStore::CommandProcessPtr CommandsProcessingStore::getCommandPr
 
 	std::cout << "FUNCTION GET COMMAND PROCESS" << std::endl;
 	switch(command.getCommandType()) {
+		case CMD_CAP:
+			return (&CommandsProcessingStore::commandCap);
 		case CMD_PASS:
 			return (&CommandsProcessingStore::commandPass);
 		case CMD_NICK:
@@ -214,6 +230,6 @@ CommandsProcessingStore::CommandProcessPtr CommandsProcessingStore::getCommandPr
 		case CMD_PRIVMSG:
 			return (&CommandsProcessingStore::commandPrivmsg);
 		case CMD_UNKNOWN:
-			return NULL;
+			return (&CommandsProcessingStore::unknownCommand);
 	}
 }

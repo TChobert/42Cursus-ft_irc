@@ -30,6 +30,8 @@ class CommandsProcessingStore {
 
 	CommandProcessPtr getCommandProcess(Command& command);
 	const std::string& getServerPswd(void) const;
+	void unknownCommand(Command& command, Client& client, std::map<int, Client>& clients);
+	void commandCap(Command& command, Client& client, std::map<int, Client>& clients);
 	void commandPass(Command& command, Client& client, std::map<int, Client>& clients);
 	void commandNick(Command& command, Client& client, std::map<int, Client>& clients);
 	void commandUser(Command& command, Client& client, std::map<int, Client>& clients);

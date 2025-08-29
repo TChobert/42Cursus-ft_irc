@@ -1,6 +1,6 @@
 #include "Client.hpp"
 
-Client::Client(int fd) : _fd(fd), _isAuthentificated(false), _isRegistered(false), _isResponsePending(false), _nickname("*") {}
+Client::Client(int fd) : _fd(fd), _isRegistered(false), _isResponsePending(false), _nickname("*") {}
 
 Client::~Client(void) {} // TO COMPLETE
 
@@ -34,10 +34,6 @@ const std::string& Client::getRealname(void) const {
 
 const std::string& Client::getHostname(void) const {
 	return (_hostname);
-}
-
-bool Client::isAuthentificated(void) const {
-	return (_isAuthentificated);
 }
 
 bool Client::isRegistered(void) const {
@@ -91,10 +87,6 @@ void Client::setRealname(const std::string& realname) {
 
 void Client::setHostname(const std::string& hostname) {
 	_hostname = hostname;
-}
-
-void Client::setAuthStatus(bool auth) {
-	_isAuthentificated = auth;
 }
 
 void Client::setRegistered(bool reg) {

@@ -66,7 +66,6 @@ class Server {
 	void updateEpollInterest(Client& client);
 	void disconnectClient(Client& client);
 	void handleClientDisconnection(int clientFd);
-	//void deleteClient(int clientFd);
 	//void deleteAllNetwork(void);
 
 	int getServerSocket(void) const;

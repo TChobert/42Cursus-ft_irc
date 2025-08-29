@@ -28,7 +28,11 @@ void IncomingDataHandler::getCommandPrefix(std::string& line, Command& currentCo
 
 commandParseStatus IncomingDataHandler::defineCommandType(Command& currentCommand, const std::string& commandKey) {
 
-	if (commandKey == "PASS") {
+	if (commandKey == "CAP") {
+		currentCommand.setCommandType(CMD_CAP);
+		return KNOWN_COMMAND;
+	}
+	else if (commandKey == "PASS") {
 		currentCommand.setCommandType(CMD_PASS);
 		return KNOWN_COMMAND;
 	} 
@@ -87,10 +91,10 @@ void IncomingDataHandler::getCommand(std::string& line, Command& currentCommand,
 	std::string commandKey;
 
 	trimSpaces(line);
-	std::cout << "LINE == " << line << std::endl;
 	size_t space = line.find(SPACE, index);
+
 	if (space == std::string::npos) {
-		commandKey = line. substr(index);
+		commandKey = line.substr(index);
 		status = defineCommandType(currentCommand, commandKey);
 		if (status != UNKNOWN_COMMAND)
 			status = ensureCommandIsComplete(currentCommand.getCommandType());
@@ -130,56 +134,51 @@ void IncomingDataHandler::getParamsAndTrailing(std::string& line, Command& curre
 }
 
 void IncomingDataHandler::addCommandToList(Client& client, Command& command) {
-	std::cout << "FUNCTION ADD TO COMMAND LIST" << std::endl;
-
 	command.printCommand();
 	client.addCommand(command);
 }
 
+void IncomingDataHandler::extractCurrentCommand(std::string& line, Command& currentCommand, size_t& index, commandParseStatus& status) {
+
+	getCommandPrefix(line, currentCommand, index);
+	getCommand(line, currentCommand, index, status);
+	if (status == IN_PROGRESS) {
+		getParamsAndTrailing(line, currentCommand, index);
+	}
+}
+
+void IncomingDataHandler::saveCurrentCommand(Client& client, Command& command, commandParseStatus& status) {
+
+	if (status == IN_PROGRESS) {
+		addCommandToList(client, command);
+	} else if (status == COMPLETE_COMMAND) {
+		addCommandToList(client, command);
+	} else if (status == UNCOMPLETE_COMMAND) {
+		client.enqueueOutput(":myserver 461 " + client.getPrefix() + " " + command.getCommand() + " :Not enough parameters");
+	} else if (status == UNKNOWN_COMMAND) {
+		client.enqueueOutput(":myserver 421 " + client.getPrefix() + " " + command.getCommand() + " :Unknown command");
+	}
+}
+
 void IncomingDataHandler::parseCommands(Client& client) {
 
-	std::cout << "FUNCTION PARSE COMMANDS" << std::endl;
 	std::string& buffer = client.getInputBuffer();
-	std::cout << "Input buffer = " << buffer << std::endl;
-	std::cout << "Buffer size = " << buffer.size() << std::endl;
-	for (size_t i = 0; i < buffer.size(); i++) {
-		std::cout << i << ": " << std::hex << (int)(unsigned char)buffer[i] << std::dec << std::endl;
-	}
 	size_t pos;
 
-	pos = buffer.find(CRLF);
-	std::cout << "pos = " << pos << std::endl;
 	while ((pos = buffer.find(CRLF)) != std::string::npos) {
 
 		commandParseStatus status = IN_PROGRESS;
+
 		std::string line = buffer.substr(0, pos);
 		buffer.erase(0, pos + 2);
-
-		std::cout << "Current line = " << line << std::endl;
  		if (line.empty())
 			continue;
 
 		Command currentCommand;
 		size_t index = 0;
 
-		getCommandPrefix(line, currentCommand, index);
-		getCommand(line, currentCommand, index, status);
-
-		if (status == IN_PROGRESS) {
-			getParamsAndTrailing(line, currentCommand, index);
-			addCommandToList(client, currentCommand);
-		}
-		else if (status == COMPLETE_COMMAND) {
-			addCommandToList(client, currentCommand);
-		}
-		else if (status == UNCOMPLETE_COMMAND) {
-			client.enqueueOutput(":myserver 461 " + client.getPrefix() + " " + currentCommand.getCommand() + " :Not enough parameters");
-			break ;
-		}
-		else if (status == UNKNOWN_COMMAND) {
-			client.enqueueOutput(":myserver 421 " + client.getPrefix() + " " + currentCommand.getCommand() + " :Unknown command");
-			break ;
-		}
+		extractCurrentCommand(line, currentCommand, index, status);
+		saveCurrentCommand(client, currentCommand, status);
 	}
 }
 
@@ -192,7 +191,6 @@ readStatus IncomingDataHandler::readIncomingData(Client& client) {
 	if (bytesRead > 0) {
 		client.appendInput(readContent, bytesRead);
 		if (client.isCrlfInInput()) {
-			std::cout << "Ready to parse" << std::endl;
 			return (READY_TO_PARSE);
 		}
 		else

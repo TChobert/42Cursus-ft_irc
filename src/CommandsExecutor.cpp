@@ -7,13 +7,9 @@ CommandsExecutor::~CommandsExecutor(void) {}
 void CommandsExecutor::executeCurrentCommand(Client& client, Command& currentCommand, std::map<int, Client>& clients) {
 
 	CommandsProcessingStore::CommandProcessPtr commandExecution = _commandsProcesses.getCommandProcess(currentCommand);
-	if (!commandExecution) {
-    std::cerr << "[ERROR] Unknown or unregistered command: "
-              << currentCommand.getCommand() << std::endl;
-    // envoyer un message d'erreur au client si nécessaire
-    client.enqueueOutput(":myserver 421 " + client.getPrefix() + " " + currentCommand.getCommand() + " :Unknown command");
-    return; // ou continue selon ton choix
-	}
+	if (!commandExecution)
+		return;
+
 	(_commandsProcesses.*commandExecution)(currentCommand, client, clients);
 }
 
