@@ -59,11 +59,13 @@ class Server {
 	void addSocketToEpoll(void);
 	void handleNewClient(void);
 	int acceptClient(void);
-	void setSocketNonBlocking(int fd);
+	void setClientSocketNonBlocking(int fd);
 	void addClientToInterestList(int clientFd);
 	void setClientID(const int clientFd);
 	void manageEpollInterests(void);
 	void updateEpollInterest(Client& client);
+	void disconnectClient(Client& client);
+	void handleClientDisconnection(int clientFd);
 	//void deleteClient(int clientFd);
 	//void deleteAllNetwork(void);
 

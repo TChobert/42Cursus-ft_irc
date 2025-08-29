@@ -4,7 +4,24 @@ Server::Server(const uint16_t port, const std::string pswd) : _port(port), _serv
 
 Server::~Server(void) {}
 
-void	Server::setSocketNonBlocking(int fd) {
+void Server::disconnectClient(Client &client) {
+
+	int clientFd = client.getFd();
+
+	std::cout << RED << client.getPrefix() << " is now disconnected from [SERVER]" << RESET << std::endl;
+	 if (epoll_ctl(_epollFd, EPOLL_CTL_DEL, clientFd, NULL) < 0) {
+		perror("epoll_ctl DEL");
+	}
+	_clients.erase(clientFd);
+	close(clientFd);
+}
+
+void Server::handleClientDisconnection(int clientFd) {
+
+	disconnectClient(_clients.at(clientFd));
+}
+
+void	Server::setClientSocketNonBlocking(int fd) {
 
 	int	flags = fcntl(fd, F_GETFL, 0);
 	if (flags < 0) {
@@ -49,7 +66,7 @@ int	Server::acceptClient(void) {
 		oss << "Failed to add client to server." << std::endl;
 		throw std::runtime_error(oss.str());
 	}
-	setSocketNonBlocking(clientFd);
+	setClientSocketNonBlocking(clientFd);
 	return (clientFd);
 }
 
@@ -179,7 +196,7 @@ void Server::handleOutgoingEvent(int fd) {
 
 	sendingStatus status = _outgoingDataHandler.handle(_clients.at(fd));
 	if (status == ERROR) {
-		//disconnectClient(_clients[fd]);
+		disconnectClient(_clients.at(fd));
 	}
 }
 
@@ -190,13 +207,15 @@ void Server::handleIncomingEvent(int fd) {
 	if (status == READY_TO_EXECUTE) {
 		_executor.execute(_clients.at(fd), _clients);
 	}
+	if (status == DISCONNECTION) {
+		handleClientDisconnection(fd);
+	}
 }
 
 void Server::handleNotifiedEvents(int fdsNumber) {
 
 	for (int i = 0; i < fdsNumber; ++i) {
 
-		std::cout << "HANDLE" << std::endl;
 		int currentFd = _events[i].data.fd;
 		uint32_t currentEvent = _events[i].events;
 
@@ -205,9 +224,8 @@ void Server::handleNotifiedEvents(int fdsNumber) {
 		}
 		else {
 			if (currentEvent & (EPOLLHUP | EPOLLRDHUP | EPOLLERR)) {
-			// 	handleClientDisconnection(currentFd);
+			 	handleClientDisconnection(currentFd);
 			} else if (currentEvent & EPOLLIN) {
-				std::cout << "INCOMING" << std::endl;
 				handleIncomingEvent(currentFd);
 			} else if (currentEvent & EPOLLOUT) {
 				handleOutgoingEvent(currentFd);
@@ -219,20 +237,16 @@ void Server::handleNotifiedEvents(int fdsNumber) {
 void Server::updateEpollInterest(Client& client) {
 
 	int clientFd = client.getFd();
-	std::cout << "CLIENT FD = " << clientFd << std::endl;
 	struct epoll_event ev;
 	ev.data.fd = clientFd;
 	ev.events = EPOLLIN;
 
 	if (client.getResponsePending() && !client.getOutputBuffer().empty()) {
-		std::cout << "RESPONSE PENDING" << std::endl;
 		ev.events |= EPOLLOUT;
 	}
-
 	if (epoll_ctl(_epollFd, EPOLL_CTL_MOD, clientFd, &ev) < 0) {
-		std::cerr << "Failed to update epoll interest for client " 
-				<< client.getPrefix() << std::endl;
-		//disconnectClient(client);
+		std::cerr << "Failed to update epoll interest for client " << client.getPrefix() << std::endl;
+		disconnectClient(client);
 	}
 }
 
@@ -248,7 +262,6 @@ void Server::run(void) {
 
 		manageEpollInterests();
 		int fdsNumber = epoll_wait(_epollFd, _events, MAX_EVENTS, -1);
-		std::cout << "FDS NUMBER == " << fdsNumber << " " << std::endl;
 		if (fdsNumber == -1) {
 			if (errno == EINTR) {
 				continue ;
