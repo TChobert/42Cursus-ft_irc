@@ -6,12 +6,23 @@ CommandsProcessingStore::~CommandsProcessingStore(void) {}
 
 const std::string CommandsProcessingStore::_validNickChars = "[]\\`^{}|";
 
-std::string CommandsProcessingStore::strToLower(std::string& str) {
+std::string CommandsProcessingStore::strToLowerRFC(std::string& str) {
 
 	std::string result = str;
 
 	for (size_t i = 0; i < result.size(); ++i) {
-		result[i] = std::tolower(result[i]);
+		unsigned char c = static_cast<unsigned char>(result[i]);
+
+		if (c >= 'A' && c <= 'Z')
+			result[i] = static_cast<char>(c + 32);
+		else if (c == '[')
+			result[i] = '{';
+		else if (c == ']')
+			result[i] = '}';
+		else if (c == '\\')
+			result[i] = '|';
+		else if (c == '^')
+			result[i] = '~';
 	}
 	return (result);
 }
@@ -22,6 +33,10 @@ std::string CommandsProcessingStore::getReplyTarget(const Client& client) const 
 
 const std::string& CommandsProcessingStore::getServerPswd(void) const {
 	return (_serverPswd);
+}
+
+bool CommandsProcessingStore::isChannel(const std::string& target) const {
+	return (target[0] == '#');
 }
 
 bool CommandsProcessingStore::isValidChar(char c) const {
@@ -42,23 +57,26 @@ void CommandsProcessingStore::sendWelcomeMessages(Client& client) {
 	client.enqueueOutput(":myserver 004 " + nick + " myserver 1.0 o o");
 }
 
-void CommandsProcessingStore::unknownCommand(Command& command, Client& client, std::map<int, Client>& clients) {
+void CommandsProcessingStore::unknownCommand(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels) {
 
 	(void)clients;
+	(void)channels;
 	std::cerr << "[ERROR] Unknown or unregistered command: " << command.getCommand() << std::endl;
 	client.enqueueOutput(":myserver 421 " + client.getPrefix() + " " + command.getCommand() + " :Unknown command");
 }
 
-void CommandsProcessingStore::commandCap(Command& command, Client& client, std::map<int, Client>& clients) {
+void CommandsProcessingStore::commandCap(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels) {
 
 	(void)clients;
 	(void)command;
+	(void)channels;
 	client.enqueueOutput(":myserver CAP * LS");
 }
 
-void CommandsProcessingStore::commandPing(Command& command, Client& client, std::map<int, Client>& clients) {
+void CommandsProcessingStore::commandPing(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels) {
 
 	(void)clients;
+	(void)channels;
 	std::string token;
 	if (!command.getParams().empty())
 		token = command.getParams()[0];
@@ -72,9 +90,10 @@ void CommandsProcessingStore::commandPing(Command& command, Client& client, std:
 	client.enqueueOutput("PONG " + token);
 }
 
-void CommandsProcessingStore::commandPass(Command& command, Client& client, std::map<int, Client>& clients) {
+void CommandsProcessingStore::commandPass(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels) {
 
 	(void)clients;
+	(void)channels;
 
 	std::cout << "Command PASS" <<std::endl;
 	if (client.authProcessStatus._passValidated == true) {
@@ -113,19 +132,19 @@ bool CommandsProcessingStore::checkNicknameValidity(const std::string& nickname)
 bool CommandsProcessingStore::isAlreadyInUse(std::string& nickname, const std::map<int, Client>& clients) const {
 
 	std::string lowerNick = nickname;
-
 	for (size_t i = 0; i < lowerNick.size(); ++i)
 		lowerNick[i] = std::tolower(static_cast<unsigned char>(lowerNick[i]));
 
 	for (std::map<int, Client>::const_iterator it = clients.begin(); it != clients.end(); ++it) {
-		if (it->second.getLowerNickname() == lowerNick)
+		if (it->second.getNormalizedRfcNickname() == lowerNick)
 			return (true);
 	}
 	return (false);
 }
 
-void CommandsProcessingStore::commandNick(Command& command, Client& client, std::map<int, Client>& clients) {
+void CommandsProcessingStore::commandNick(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels) {
 
+	(void)channels;
 	std::cout << "Command NICK" <<std::endl;
 	if (!client.authProcessStatus._passValidated) {
 		client.enqueueOutput(":myserver 451 NICK :You have not registered");
@@ -156,9 +175,10 @@ void CommandsProcessingStore::commandNick(Command& command, Client& client, std:
 	}
 }
 
-void CommandsProcessingStore::commandUser(Command& command, Client& client, std::map<int, Client>& clients) {
+void CommandsProcessingStore::commandUser(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels) {
 
 	(void)clients;
+	(void)channels;
 
 	std::cout << "Command USER" <<std::endl;
 	if (!client.authProcessStatus._passValidated || !client.authProcessStatus._nickNameSet) {
@@ -185,15 +205,44 @@ void CommandsProcessingStore::commandUser(Command& command, Client& client, std:
 	}
 }
 
-void CommandsProcessingStore::privmsgTargetCheckup(const Client& sender, Client& target, const std::string& targetName, const std::string& message) {
+bool CommandsProcessingStore::privmsgTargetCheckup(const Client& sender, Client& target, const std::string& targetName, const std::string& message) {
 
 	if (target.isRegistered()) {
 		std::string fullMsg = sender.getPrefix() + " PRIVMSG " + targetName + " :" + message;
 		target.enqueueOutput(fullMsg);
+		return (true);
 	}
+	return (false);
 }
 
-void CommandsProcessingStore::commandPrivmsg(Command& command, Client& client, std::map<int, Client>& clients) {
+void CommandsProcessingStore::privmsgToClient(Client& sender, std::string& target, std::map<int, Client>& clients, std::string message) {
+
+	for (std::map<int, Client>::iterator cit = clients.begin(); cit != clients.end(); ++ cit) {
+		if (cit->second.getNormalizedRfcNickname() == target) {
+			if (privmsgTargetCheckup(sender, cit->second, target, message))
+				return ;
+		}
+	}
+	sender.enqueueOutput(":myserver 401 " + getReplyTarget(sender) + " " + target + " :No such nick/channel");
+}
+
+void CommandsProcessingStore::privmsgToChannel(Client& sender, std::string& target, std::map<std::string, Channel*>& channels, std::string message) {
+
+	bool found = false;
+
+	if (target.empty()) {
+		sender.enqueueOutput(":myserver 401 " + getReplyTarget(sender) + " " + target + " :No such nick/channel");
+		return ;
+	}
+	std::map<std::string, Channel*>::iterator it = channels.find(target);
+	if(it != channels.end()) {
+		it->second->broadcastMsg(sender.getNormalizedRfcNickname(), message);
+		return ;
+	}
+	sender.enqueueOutput(":myserver 401 " + getReplyTarget(sender) + " " + target + " :No such nick/channel");
+}
+
+void CommandsProcessingStore::commandPrivmsg(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels) {
 
 	if (!client.isRegistered()) {
 		client.enqueueOutput(":myserver 451 " + getReplyTarget(client) + " PRIVMSG :You have not registered");
@@ -213,20 +262,19 @@ void CommandsProcessingStore::commandPrivmsg(Command& command, Client& client, s
 
 	for (std::vector<std::string>::iterator it = targets.begin(); it != targets.end(); ++it) {
 
-		std::string target = strToLower(*it);
-		bool found = false;
+		std::string target = strToLowerRFC(*it);
 
-		for (std::map<int, Client>::iterator cit = clients.begin(); cit != clients.end(); ++ cit) {
-			if (cit->second.getLowerNickname() == target) {
-				found = true;
-				privmsgTargetCheckup(client, cit->second, *it, message);
-				break ;
-			}
-		}
-		if (!found) {
-			client.enqueueOutput(":myserver 401 " + getReplyTarget(client) + " " + *it + " :No such nick/channel");
+		if (isChannel(*it)) {
+			privmsgToChannel(client, *it, channels, message);
+		} else {
+			privmsgToClient(client, target, clients, message);
 		}
 	}
+}
+
+void CommandsProcessingStore::commandJoin(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels) {
+
+	
 }
 
 CommandsProcessingStore::CommandProcessPtr CommandsProcessingStore::getCommandProcess(Command& command) {
@@ -243,8 +291,8 @@ CommandsProcessingStore::CommandProcessPtr CommandsProcessingStore::getCommandPr
 			return (&CommandsProcessingStore::commandNick);
 		case CMD_USER:
 			return (&CommandsProcessingStore::commandUser);
-		// case CMD_JOIN:
-		// 	return (&CommandsProcessingStore::commandJoin);
+		case CMD_JOIN:
+			return (&CommandsProcessingStore::commandJoin);
 		case CMD_PRIVMSG:
 			return (&CommandsProcessingStore::commandPrivmsg);
 		case CMD_UNKNOWN:

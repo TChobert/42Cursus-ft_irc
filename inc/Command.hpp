@@ -6,6 +6,12 @@
 #include <stdexcept>
 #include <iostream>
 
+#define YELLOW "\033[33m"
+#define RED "\033[31m"
+#define GREEN "\033[32m"
+#define BLUE "\033[34m"
+#define RESET "\033[0m"
+
 enum commandType {
 	CMD_UNKNOWN = 0,
 	CMD_CAP,
@@ -13,7 +19,7 @@ enum commandType {
 	CMD_PASS,
 	CMD_NICK,
 	CMD_USER,
-	//CMD_JOIN,
+	CMD_JOIN,
 	CMD_PRIVMSG,
 	//CMD_KICK,
 	//CMD_INVITE,

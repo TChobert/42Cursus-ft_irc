@@ -42,14 +42,16 @@ const std::string& Command::getTrailing(void) const {
 
 void Command::printCommand(void) const {
 
+	std::cout << BLUE;
 	std::cout << "==> COMMAND ==>" << std::endl;
-	std::cout << "Command PREFIX = " << getPrefix() << std::endl;
-	std::cout << "Command type = " << getCommand() << std::endl;
-	std::cout << "Command PARAMS = " << std::endl;
+	std::cout << "Command PREFIX: " << getPrefix() << std::endl;
+	std::cout << "Command type: " << getCommand() << std::endl;
+	std::cout << "Command PARAMS: " << std::endl;
 	for (size_t i = 0; i < _params.size(); ++ i) {
 		std::cout << _params[i] << std::endl;
 	}
-	std::cout << "COMMAND TRAILING = " << getTrailing() << std::endl;
+	std::cout << "COMMAND TRAILING: " << getTrailing() << std::endl;
+	std::cout << RESET;
 }
 
 // SETTERS

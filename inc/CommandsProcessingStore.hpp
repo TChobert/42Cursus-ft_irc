@@ -5,6 +5,7 @@
 #include <map>
 
 #include "Client.hpp"
+#include "Channel.hpp"
 
 class CommandsProcessingStore {
 
@@ -16,25 +17,29 @@ class CommandsProcessingStore {
 	bool checkNicknameValidity(const std::string& nickname);
 	bool isValidChar(const char c) const;
 	bool isAlreadyInUse(std::string& nickname, const std::map<int, Client>& clients) const;
+	bool isChannel(const std::string& target) const;
+	void privmsgToChannel(Client& sender, std::string& target, std::map<std::string, Channel*>& channels, std::string message);
+	void privmsgToClient(Client& sender, std::string& target, std::map<int, Client>& clients, std::string message);
 	std::string getReplyTarget(const Client& client) const;
 	void sendWelcomeMessages(Client& client);
-	std::string strToLower(std::string& str);
-	void privmsgTargetCheckup(const Client& sender, Client& target, const std::string& targetName, const std::string& message);
+	std::string strToLowerRFC(std::string& str);
+	bool privmsgTargetCheckup(const Client& sender, Client& target, const std::string& targetName, const std::string& message);
 
 	public:
 
-	typedef void (CommandsProcessingStore::*CommandProcessPtr)(Command& command, Client&, std::map<int, Client>&);
+	typedef void (CommandsProcessingStore::*CommandProcessPtr)(Command& command, Client&, std::map<int, Client>&, std::map<std::string, Channel*>& channels);
 
 	CommandsProcessingStore(const std::string& serverPswd);
 	~CommandsProcessingStore(void);
 
 	CommandProcessPtr getCommandProcess(Command& command);
 	const std::string& getServerPswd(void) const;
-	void unknownCommand(Command& command, Client& client, std::map<int, Client>& clients);
-	void commandCap(Command& command, Client& client, std::map<int, Client>& clients);
-	void commandPing(Command& command, Client& client, std::map<int, Client>& clients);
-	void commandPass(Command& command, Client& client, std::map<int, Client>& clients);
-	void commandNick(Command& command, Client& client, std::map<int, Client>& clients);
-	void commandUser(Command& command, Client& client, std::map<int, Client>& clients);
-	void commandPrivmsg(Command& command, Client& client, std::map<int, Client>& clients);
+	void unknownCommand(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels);
+	void commandCap(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels);
+	void commandPing(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels);
+	void commandPass(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels);
+	void commandNick(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels);
+	void commandUser(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels);
+	void commandPrivmsg(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels);
+	void commandJoin(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels);
 };

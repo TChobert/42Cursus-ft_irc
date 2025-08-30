@@ -14,6 +14,7 @@
 #include <cerrno>
 
 #include "Client.hpp"
+#include "Channel.hpp"
 #include "IncomingDataHandler.hpp"
 #include "CommandsExecutor.hpp"
 #include "OutgoingDataHandler.hpp"
@@ -36,6 +37,7 @@ class Server {
 	int _epollFd;
 	struct epoll_event _events[MAX_EVENTS];
 	std::map<int, Client> _clients;
+	std::map<std::string, Channel*> _channels;
 
 	IncomingDataHandler _incomingDataHandler;
 	OutgoingDataHandler _outgoingDataHandler;

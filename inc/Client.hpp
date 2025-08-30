@@ -44,7 +44,7 @@ class Client {
 	const std::string& getUsername(void) const;
 	const std::string& getRealname(void) const;
 	const std::string& getHostname(void) const;
-	std::string getLowerNickname(void) const;
+	std::string getNormalizedRfcNickname(void) const;
 	std::vector<Command>& getCommands(void);
 	std::string& getInputBuffer(void);
 	std::string& getOutputBuffer(void);

@@ -30,31 +30,35 @@ commandParseStatus IncomingDataHandler::defineCommandType(Command& currentComman
 
 	if (commandKey == "CAP") {
 		currentCommand.setCommandType(CMD_CAP);
-		return KNOWN_COMMAND;
+		return (KNOWN_COMMAND);
 	}
 	else if (commandKey == "PING") {
 		currentCommand.setCommandType(CMD_PING);
-		return KNOWN_COMMAND;
+		return (KNOWN_COMMAND);
 	}
 	else if (commandKey == "PASS") {
 		currentCommand.setCommandType(CMD_PASS);
-		return KNOWN_COMMAND;
+		return (KNOWN_COMMAND);
 	} 
 	else if (commandKey == "NICK") {
 		currentCommand.setCommandType(CMD_NICK);
-		return KNOWN_COMMAND;
+		return (KNOWN_COMMAND);
 	} 
 	else if (commandKey == "USER") {
 		currentCommand.setCommandType(CMD_USER);
-		return KNOWN_COMMAND;
-	} 
+		return (KNOWN_COMMAND);
+	}
+	else if (commandKey == "JOIN") {
+		currentCommand.setCommandType(CMD_JOIN);
+		return (KNOWN_COMMAND);
+	}
 	else if (commandKey == "PRIVMSG") {
 		currentCommand.setCommandType(CMD_PRIVMSG);
-		return KNOWN_COMMAND;
+		return (KNOWN_COMMAND);
 	} 
 	else {
 		currentCommand.setCommandType(CMD_UNKNOWN);
-		return UNKNOWN_COMMAND;
+		return (KNOWN_COMMAND);
 	}
 }
 
@@ -78,7 +82,7 @@ commandParseStatus IncomingDataHandler::ensureCommandIsComplete(commandType type
 		case CMD_PASS:
 		case CMD_NICK:
 		case CMD_USER:
-		//case CMD_JOIN:
+		case CMD_JOIN:
 		case CMD_PRIVMSG:
 	//	case CMD_KICK:
 	//	case CMD_INVITE:

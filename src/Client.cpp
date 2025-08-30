@@ -52,13 +52,23 @@ std::string& Client::getOutputBuffer(void) {
 	return (_outputBuffer);
 }
 
-std::string Client::getLowerNickname(void) const {
+std::string Client::getNormalizedRfcNickname(void) const {
 
 	std::string nick = getNickname();
 
 	for (size_t i = 0; i < nick.size(); ++i) {
-		if (nick[i] >= 'A' && nick[i] <= 'Z')
-			nick[i] = std::tolower(static_cast<unsigned char>(nick[i]));
+		unsigned char c = static_cast<unsigned char>(nick[i]);
+
+		if (c >= 'A' && c <= 'Z')
+			nick[i] = static_cast<char>(c + 32);
+		else if (c == '[')
+			nick[i] = '{';
+		else if (c == ']')
+			nick[i] = '}';
+		else if (c == '\\')
+			nick[i] = '|';
+		else if (c == '^')
+			nick[i] = '~';
 	}
 	return (nick);
 }
