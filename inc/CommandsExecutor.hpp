@@ -14,7 +14,7 @@ class CommandsExecutor {
 
 	std::string _serverPswd;
 	CommandsProcessingStore _commandsProcesses;
-	void executeCurrentCommand(Client& client, Command& currentCommand, std::map<int, Client>& clients);
+	void executeCurrentCommand(Client& client, Command& currentCommand, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels);
 
 	public:
 
@@ -22,5 +22,5 @@ class CommandsExecutor {
 	~CommandsExecutor(void);
 
 	const std::string& getServerPswd(void);
-	void execute(Client& client, std::map<int, Client>& clients);
+	void execute(Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels);
 };

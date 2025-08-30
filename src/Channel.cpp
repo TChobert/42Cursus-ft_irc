@@ -34,10 +34,12 @@ void Channel::setTopic(const std::string& topic) {
 
 void Channel::addMember(Client* newMember) {
 
-	_members.insert(std::make_pair(newMember->getNickname(), newMember));
+	_members.insert(std::make_pair(newMember->getNormalizedRfcNickname(), newMember));
 }
 
-void Channel::removeMember(const std::string& nickname) {
+void Channel::removeMember(Client& client) {
+
+	const std::string nickname = client.getNormalizedRfcNickname();
 
 	_members.erase(nickname);
 	if (_operators.count(nickname))

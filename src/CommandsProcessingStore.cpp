@@ -236,7 +236,11 @@ void CommandsProcessingStore::privmsgToChannel(Client& sender, std::string& targ
 	}
 	std::map<std::string, Channel*>::iterator it = channels.find(target);
 	if(it != channels.end()) {
-		it->second->broadcastMsg(sender.getNormalizedRfcNickname(), message);
+		if (it->second->isMember(sender.getNormalizedRfcNickname())) {
+			it->second->broadcastMsg(sender.getNormalizedRfcNickname(), message);
+		} else {
+			sender.enqueueOutput(":myserver 404 " + getReplyTarget(sender) + " " + target + " :Cannot send to channel (not a member)");
+		}
 		return ;
 	}
 	sender.enqueueOutput(":myserver 401 " + getReplyTarget(sender) + " " + target + " :No such nick/channel");
@@ -272,9 +276,49 @@ void CommandsProcessingStore::commandPrivmsg(Command& command, Client& client, s
 	}
 }
 
+std::vector<std::string> CommandsProcessingStore::getChannels(const std::string& channelsString, const std::string& delimiter) {
+
+	std::vector<std::string> channels;
+	std::string temp = channelsString;
+	size_t pos;
+
+	while ((pos = temp.find(delimiter)) != std::string::npos) {
+		std::string token = temp.substr(0, pos);
+		trimSpaces(token);
+		channels.push_back(token);
+		temp.erase(0, pos + delimiter.length());
+	}
+	if (!temp.empty()) {
+		trimSpaces(temp);
+		channels.push_back(temp);
+	}
+	return (channels);
+}
+
+void CommandsProcessingStore::channelsJoinAttempt(Client& client, std::vector<std::string>& channelsNames, std::map<std::string, Channel*>& channels) {
+
+}
+
+void CommandsProcessingStore::joinChannels(std::vector<std::string> channelsAndKeys, Client& client, std::map<std::string, Channel*>& channels) {
+
+	std::vector<std::string> channelsNames = getChannels(channelsAndKeys.at(0));
+	if (channelsAndKeys.size() > 1) {
+		std::vector<std::string> keys = getKeys(channelsAndKeys.at(1));
+		channelsAndKeysJoinAttempt(client, channelsNames, keys, channels);
+	} else {
+		channelsJoinAttempt(client, channelsNames, channels);
+	}
+}
+
 void CommandsProcessingStore::commandJoin(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels) {
 
-	
+	(void)clients;
+	std::vector<std::string> params = command.getParams();
+	if (params.empty() || params.size() > 2) {
+		// message invalidite
+		return ;
+	}
+	joinChannels(params, client, channels);
 }
 
 CommandsProcessingStore::CommandProcessPtr CommandsProcessingStore::getCommandProcess(Command& command) {
@@ -299,3 +343,18 @@ CommandsProcessingStore::CommandProcessPtr CommandsProcessingStore::getCommandPr
 			return (&CommandsProcessingStore::unknownCommand);
 	}
 }
+
+
+// std::vector<std::string> split(const std::string& s, const std::string& delimiter) {
+//     std::vector<std::string> tokens;
+//     size_t pos = 0;
+//     std::string token;
+//     while ((pos = s.find(delimiter)) != std::string::npos) {
+//         token = s.substr(0, pos);
+//         tokens.push_back(token);
+//         s.erase(0, pos + delimiter.length());
+//     }
+//     tokens.push_back(s);
+
+//     return tokens;
+// }

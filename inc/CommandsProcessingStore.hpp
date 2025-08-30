@@ -24,6 +24,8 @@ class CommandsProcessingStore {
 	void sendWelcomeMessages(Client& client);
 	std::string strToLowerRFC(std::string& str);
 	bool privmsgTargetCheckup(const Client& sender, Client& target, const std::string& targetName, const std::string& message);
+	void joinChannels(std::vector<std::string> channelsAndKeys, Client& client, std::map<std::string, Channel*>& channels);
+	void channelsJoinAttempt(Client& client, std::vector<std::string>& channelsNames, std::map<std::string, Channel*>& channels);
 
 	public:
 

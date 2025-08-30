@@ -32,7 +32,7 @@ class Channel {
 	const std::string& getChanTopic(void) const;
 
 	void addMember(Client* newMember);
-	void removeMember(const std::string& nick);
+	void removeMember(Client& client);
 	void setChanName(const std::string& name);
 	void setTopic(const std::string& topic);
 	void broadcastMsg(const std::string& sender, const std::string& message);
