@@ -14,6 +14,7 @@ class CommandsProcessingStore {
 	const std::string& _serverPswd;
 	static const std::string _validNickChars;
 
+	std::vector<std::string> split(const std::string& str, const std::string& delimiter);
 	bool checkNicknameValidity(const std::string& nickname);
 	bool isValidChar(const char c) const;
 	bool isAlreadyInUse(std::string& nickname, const std::map<int, Client>& clients) const;
@@ -26,6 +27,7 @@ class CommandsProcessingStore {
 	bool privmsgTargetCheckup(const Client& sender, Client& target, const std::string& targetName, const std::string& message);
 	void joinChannels(std::vector<std::string> channelsAndKeys, Client& client, std::map<std::string, Channel*>& channels);
 	void channelsJoinAttempt(Client& client, std::vector<std::string>& channelsNames, std::map<std::string, Channel*>& channels);
+	void createChannel(Client& client, std::string& channelName, std::map<std::string, Channel*>& channels, const std::string& key);
 
 	public:
 

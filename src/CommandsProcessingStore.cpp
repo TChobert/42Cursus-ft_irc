@@ -27,6 +27,23 @@ std::string CommandsProcessingStore::strToLowerRFC(std::string& str) {
 	return (result);
 }
 
+std::vector<std::string> CommandsProcessingStore::split(const std::string& str, const std::string& delimiter) {
+
+	std::vector<std::string> split;
+	std::string temp = str;
+	size_t pos;
+
+	while ((pos = temp.find(delimiter)) != std::string::npos) {
+		std::string token = temp.substr(0, pos);
+		split.push_back(token);
+		temp.erase(0, pos + delimiter.length());
+	}
+	if (!temp.empty()) {
+		split.push_back(temp);
+	}
+	return (split);
+}
+
 std::string CommandsProcessingStore::getReplyTarget(const Client& client) const {
 	return (client.isRegistered() ? client.getNickname() : "*");
 }
@@ -276,34 +293,54 @@ void CommandsProcessingStore::commandPrivmsg(Command& command, Client& client, s
 	}
 }
 
-std::vector<std::string> CommandsProcessingStore::getChannels(const std::string& channelsString, const std::string& delimiter) {
+void CommandsProcessingStore::createChannel(Client& client, std::string& channelName, std::map<std::string, Channel*>& channels, const std::string& key) {
 
-	std::vector<std::string> channels;
-	std::string temp = channelsString;
-	size_t pos;
+	std::string normName = strToLowerRFC(channelName);
 
-	while ((pos = temp.find(delimiter)) != std::string::npos) {
-		std::string token = temp.substr(0, pos);
-		trimSpaces(token);
-		channels.push_back(token);
-		temp.erase(0, pos + delimiter.length());
+	std::map<std::string, Channel*>::iterator it = channels.find(normName);
+	Channel* chan = nullptr;
+
+	if (it != channels.end()) {
+		chan = it->second;
+	} else {
+		chan = new Channel(channelName);
+		if (!key.empty())
+			chan->setKey(key);
+		channels[normName] = chan;
 	}
-	if (!temp.empty()) {
-		trimSpaces(temp);
-		channels.push_back(temp);
-	}
-	return (channels);
+	chan->addMember(&client);
+	chan->addOperator(client);
+	std::string welcomeMsg = ":myserver NOTICE " + client.getNickname() + " :Welcome to " + channelName + "!";
+	client.enqueueOutput(welcomeMsg);
 }
 
 void CommandsProcessingStore::channelsJoinAttempt(Client& client, std::vector<std::string>& channelsNames, std::map<std::string, Channel*>& channels) {
 
+	for (std::vector<std::string>::iterator it = channelsNames.begin(); it != channelsNames.end(); ++it) {
+
+		std::string currentChanName = strToLowerRFC(*it);
+		std::map<std::string, Channel*>::iterator pos = channels.find(currentChanName);
+		if (pos != channels.end()) {
+			if (pos->second->isMember(client.getNormalizedRfcNickname())) {
+				client.enqueueOutput(":myserver 443 " + client.getNickname() + " " + *it + " :is already on channel");
+				continue ;
+			} else {
+				pos->second->addMember(&client);
+				std::string joinNotice = ":myserver NOTICE " + client.getNickname() + " :Welcome to " + pos->second->getChanName() + "!";
+				client.enqueueOutput(joinNotice);
+			}
+		} else {
+			createChannel(client, *it, channels, "");
+		}
+	}
 }
 
 void CommandsProcessingStore::joinChannels(std::vector<std::string> channelsAndKeys, Client& client, std::map<std::string, Channel*>& channels) {
 
-	std::vector<std::string> channelsNames = getChannels(channelsAndKeys.at(0));
+	std::vector<std::string> channelsNames = split(channelsAndKeys.at(0), ",");
+
 	if (channelsAndKeys.size() > 1) {
-		std::vector<std::string> keys = getKeys(channelsAndKeys.at(1));
+		std::vector<std::string> keys = split(channelsAndKeys.at(1), ",");
 		channelsAndKeysJoinAttempt(client, channelsNames, keys, channels);
 	} else {
 		channelsJoinAttempt(client, channelsNames, channels);

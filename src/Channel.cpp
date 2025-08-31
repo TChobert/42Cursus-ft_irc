@@ -1,6 +1,6 @@
 #include "Channel.hpp"
 
-Channel::Channel(void) {}
+Channel::Channel(std::string name) : _name(name), _inviteOnly(false), _topicRestrict(false), _userLimit(0) {}
 
 Channel::~Channel(void) {}
 
@@ -22,6 +22,20 @@ bool Channel::isOperator(const std::string& nickname) const {
 	return (_operators.count(nickname) != 0);
 }
 
+std::string Channel::getMembersListForIRC(void) const {
+
+	std::string list;
+	for (std::map<std::string, Client*>::const_iterator it = _members.begin(); it != _members.end(); ++it) {
+		if (!list.empty()) {
+			list.append(" ");
+		}
+		if (_operators.count(it->first))
+			list.append("@");
+		list.append(it->second->getNickname());
+	}
+	return (list);
+}
+
 // SETTERS //
 
 void Channel::setChanName(const std::string& name) {
@@ -32,9 +46,24 @@ void Channel::setTopic(const std::string& topic) {
 	_topic = topic;
 }
 
+void Channel::setKey(const std::string& key) {
+	_key = key;
+}
+
 void Channel::addMember(Client* newMember) {
 
 	_members.insert(std::make_pair(newMember->getNormalizedRfcNickname(), newMember));
+
+	std::string joinMsg = ":" + newMember->getPrefix() + " JOIN " + _name;
+	broadcastMsg(newMember->getNormalizedRfcNickname(), joinMsg);
+
+	std::string memberList = getMembersListForIRC();
+	newMember->enqueueOutput(":myserver 353 " + newMember->getNickname() + " = " + _name + " :" + memberList);
+	newMember->enqueueOutput(":myserver 366 " + newMember->getNickname() + " " + _name + " :End of NAMES list");
+}
+
+void Channel::addOperator(Client& newOp) {
+	_operators.insert(newOp.getNormalizedRfcNickname());
 }
 
 void Channel::removeMember(Client& client) {
