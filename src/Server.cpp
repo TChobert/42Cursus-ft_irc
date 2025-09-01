@@ -12,6 +12,20 @@ void Server::disconnectClient(Client &client) {
 	 if (epoll_ctl(_epollFd, EPOLL_CTL_DEL, clientFd, NULL) < 0) {
 		perror("epoll_ctl DEL");
 	}
+	for (std::map<std::string, Channel*>::iterator it = _channels.begin(); it != _channels.end(); ) {
+		if (it->second->isMember(client.getNormalizedRfcNickname())) {
+			it->second->broadcastMsg(client.getNormalizedRfcNickname(), client.getQuitMessage());
+			it->second->removeMember(client);
+		}
+		if (it->second->isEmpty()) {
+			delete it->second;
+			std::map<std::string, Channel*>::iterator tmp = it;
+			++it;
+			_channels.erase(tmp);
+		} else {
+			++it;
+		}
+	}
 	_clients.erase(clientFd);
 	close(clientFd);
 }
@@ -192,13 +206,13 @@ void Server::initServer(void) {
 
 ///// MAIN PROCESS /////
 
-void Server::handleOutgoingEvent(int fd) {
+// void Server::handleOutgoingEvent(int fd) {
 
-	sendingStatus status = _outgoingDataHandler.handle(_clients.at(fd));
-	if (status == ERROR) {
-		disconnectClient(_clients.at(fd));
-	}
-}
+// 	sendingStatus status = _outgoingDataHandler.handle(_clients.at(fd), _epollFd);
+// 	if (status == ERROR) {
+// 		disconnectClient(_clients.at(fd));
+// 	}
+// }
 
 void Server::handleIncomingEvent(int fd) {
 
@@ -224,43 +238,36 @@ void Server::handleNotifiedEvents(int fdsNumber) {
 		}
 		else {
 			if (currentEvent & (EPOLLHUP | EPOLLRDHUP | EPOLLERR)) {
-			 	handleClientDisconnection(currentFd);
+				handleClientDisconnection(currentFd);
 			} else if (currentEvent & EPOLLIN) {
 				handleIncomingEvent(currentFd);
-			} else if (currentEvent & EPOLLOUT) {
-				handleOutgoingEvent(currentFd);
+			// } else if (currentEvent & EPOLLOUT) {
+			// 	handleOutgoingEvent(currentFd);
+			// }
 			}
 		}
 	}
 }
 
-void Server::updateEpollInterest(Client& client) {
+void Server::disconnectClients() {
 
-	int clientFd = client.getFd();
-	struct epoll_event ev;
-	ev.data.fd = clientFd;
-	ev.events = EPOLLIN;
+	std::vector<int> toDisconnect;
 
-	if (client.getResponsePending() && !client.getOutputBuffer().empty()) {
-		ev.events |= EPOLLOUT;
+	for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); ++it) {
+		if (it->second.getDisconnectionStatus()) {
+			toDisconnect.push_back(it->first);
+		}
 	}
-	if (epoll_ctl(_epollFd, EPOLL_CTL_MOD, clientFd, &ev) < 0) {
-		std::cerr << "Failed to update epoll interest for client " << client.getPrefix() << std::endl;
-		disconnectClient(client);
+	for (size_t i = 0; i < toDisconnect.size(); ++i) {
+		disconnectClient(_clients.at(toDisconnect[i]));
 	}
-}
-
-void Server::manageEpollInterests(void) {
-
-	for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); ++it)
-			updateEpollInterest(it->second);
 }
 
 void Server::run(void) {
 
 	while (true) {
 
-		manageEpollInterests();
+	//	disconnectClients();
 		int fdsNumber = epoll_wait(_epollFd, _events, MAX_EVENTS, -1);
 		if (fdsNumber == -1) {
 			if (errno == EINTR) {
@@ -272,12 +279,17 @@ void Server::run(void) {
 			}
 		}
 		handleNotifiedEvents(fdsNumber);
+		for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); ++it) {
+			if (it->second.getResponsePending() && !it->second.getOutputBuffer().empty()) {
+				if (_outgoingDataHandler.handle(it->second, _epollFd) == ERROR)
+					handleClientDisconnection(it->first);
+			}
+		}
 	}
 }
 
 ///// GETTERS /////
 
 int Server::getServerSocket(void) const {
-
 	return (_serverSocket);
 }

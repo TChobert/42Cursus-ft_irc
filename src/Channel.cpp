@@ -18,6 +18,10 @@ bool Channel::isTopicRestrict(void) const {
 	return (_topicRestrict);
 }
 
+bool Channel::isEmpty(void) const {
+	return (_members.empty());
+}
+
 const std::string& Channel::getChanName(void) const {
 	return (_name);
 }

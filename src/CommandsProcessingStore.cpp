@@ -397,6 +397,22 @@ void CommandsProcessingStore::commandJoin(Command& command, Client& client, std:
 	joinChannels(params, client, channels);
 }
 
+void CommandsProcessingStore::commandQuit(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels) {
+
+	(void)clients;
+	(void)channels;
+	std::string message = command.getTrailing();
+	std::string quitMessage;
+
+	if (!message.empty()) {
+		quitMessage = ":" + client.getPrefix() + " QUIT :" + message;
+	} else {
+		quitMessage = ":" + client.getPrefix() + " QUIT :Client Quit";
+	}
+	client.setQuitMessage(quitMessage);
+	client.setDisconnectionStatus();
+}
+
 CommandsProcessingStore::CommandProcessPtr CommandsProcessingStore::getCommandProcess(Command& command) {
 
 	std::cout << "FUNCTION GET COMMAND PROCESS" << std::endl;
@@ -415,11 +431,12 @@ CommandsProcessingStore::CommandProcessPtr CommandsProcessingStore::getCommandPr
 			return (&CommandsProcessingStore::commandJoin);
 		case CMD_PRIVMSG:
 			return (&CommandsProcessingStore::commandPrivmsg);
+		case CMD_QUIT:
+			return (&CommandsProcessingStore::commandQuit);
 		case CMD_UNKNOWN:
 			return (&CommandsProcessingStore::unknownCommand);
 	}
 }
-
 
 // std::vector<std::string> split(const std::string& s, const std::string& delimiter) {
 //     std::vector<std::string> tokens;

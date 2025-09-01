@@ -27,7 +27,13 @@ int main(int ac, char **av) {
 		std::cerr << e.what() << std::endl;
 		return (EXIT_FAILURE);
 	}
-	server.run();
+	try {
+		server.run();
+	}
+	catch (const std::exception& e) {
+		std::cerr << e.what() << std::endl;
+		return (EXIT_FAILURE);
+	}
 
 	return (EXIT_SUCCESS);
 }

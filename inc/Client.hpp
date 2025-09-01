@@ -25,11 +25,14 @@ class Client {
 
 	bool _isRegistered;
 	bool _isResponsePending;
+	bool _needEpollReset;
+	bool _disconnectionPending;
 
 	std::string _nickname;
 	std::string _username;
 	std::string _realname;
 	std::string _hostname;
+	std::string _quitMessage;
 
 	public:
 
@@ -49,22 +52,26 @@ class Client {
 	std::string& getInputBuffer(void);
 	std::string& getOutputBuffer(void);
 	std::string getPrefix(void) const;
-	bool isAuthentificated(void) const;
+	std::string& getQuitMessage(void);
 	bool isRegistered(void) const;
 	bool isCrlfInInput(void) const;
+	bool getDisconnectionStatus(void) const;
+	bool getEpollReset(void) const;
 
 	void setResponsePending(bool mode);
 	void setNickname(const std::string& nick);
 	void setUsername(const std::string& username);
 	void setRealname(const std::string& realname);
 	void setHostname(const std::string& hostname);
-	void setAuthStatus(bool auth);
 	void setRegistered(bool reg);
 	void appendInput(const char *input, const size_t len);
 	void enqueueOutput(const std::string& output);
 	void flushInputBuffer(void);
 	void flushOutputBuffer(void);
 	void addCommand(Command& command);
+	void setDisconnectionStatus(void);
+	void setQuitMessage(std::string& message);
+	void setEpollReset(bool status);
 
 	// void joinChannel(const std::string& channel);
 	// void leaveChannel(const std::string& channel);

@@ -8,6 +8,7 @@
 #include <sstream>
 #include <cerrno>
 #include <cstdio>
+#include <sys/epoll.h>
 
 #include "Client.hpp"
 
@@ -21,10 +22,12 @@ class OutgoingDataHandler {
 
 	private:
 
+	void updateClientEpoll(Client& client, bool needsOutput, int& epollFd);
+
 	public:
 
 	OutgoingDataHandler(void);
 	~OutgoingDataHandler(void);
 
-	sendingStatus handle(Client& client);
+	sendingStatus handle(Client& client, int& epollFd);
 };

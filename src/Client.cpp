@@ -1,6 +1,6 @@
 #include "Client.hpp"
 
-Client::Client(int fd) : _fd(fd), _isRegistered(false), _isResponsePending(false), _nickname("*") {}
+Client::Client(int fd) : _fd(fd), _isRegistered(false), _isResponsePending(false), _needEpollReset(false), _disconnectionPending(false), _nickname("*") {}
 
 Client::~Client(void) {} // TO COMPLETE
 
@@ -14,6 +14,10 @@ int Client::getFd(void) const {
 
 bool Client::getResponsePending(void) const {
 	return (_isResponsePending);
+}
+
+bool Client::getEpollReset(void) const {
+	return (_needEpollReset);
 }
 
 std::vector<Command>& Client::getCommands(void) {
@@ -52,6 +56,10 @@ std::string& Client::getOutputBuffer(void) {
 	return (_outputBuffer);
 }
 
+std::string& Client::getQuitMessage(void) {
+	return (_quitMessage);
+}
+
 std::string Client::getNormalizedRfcNickname(void) const {
 
 	std::string nick = getNickname();
@@ -75,6 +83,10 @@ std::string Client::getNormalizedRfcNickname(void) const {
 
 bool Client::isCrlfInInput(void) const {
 	return (_inputBuffer.find_first_of(CRLF) != std::string::npos);
+}
+
+bool Client::getDisconnectionStatus(void) const {
+	return (_disconnectionPending);
 }
 
 ///// SETTERS /////
@@ -103,6 +115,10 @@ void Client::setRegistered(bool reg) {
 	_isRegistered =  reg;
 }
 
+void Client::setDisconnectionStatus(void) {
+	_disconnectionPending = true;
+}
+
 void Client::appendInput(const char *input, const size_t len) {
 	_inputBuffer.append(input, len);
 }
@@ -122,4 +138,12 @@ void Client::flushOutputBuffer(void) {
 
 void Client::addCommand(Command& command) {
 	_commands.push_back(command);
+}
+
+void Client::setQuitMessage(std::string& quitMessage) {
+	_quitMessage = quitMessage;
+}
+
+void Client::setEpollReset(bool status) {
+	_needEpollReset = status;
 }
