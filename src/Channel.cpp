@@ -6,8 +6,28 @@ Channel::~Channel(void) {}
 
 // GETTERS //
 
+bool Channel::isInviteOnly(void) const {
+	return (_inviteOnly);
+}
+
+bool Channel::isKeyProtected(void) const {
+	return (!_key.empty());
+}
+
+bool Channel::isTopicRestrict(void) const {
+	return (_topicRestrict);
+}
+
 const std::string& Channel::getChanName(void) const {
 	return (_name);
+}
+
+const std::string& Channel::getKey(void) const {
+	return (_key);
+}
+
+size_t Channel::getUserLimit(void) const {
+	return (_userLimit);
 }
 
 const std::string& Channel::getChanTopic(void) const {
@@ -34,6 +54,10 @@ std::string Channel::getMembersListForIRC(void) const {
 		list.append(it->second->getNickname());
 	}
 	return (list);
+}
+
+bool Channel::checkKey(const std::string& key) const {
+	return (_key == key);
 }
 
 // SETTERS //

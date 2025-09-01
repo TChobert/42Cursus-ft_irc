@@ -245,17 +245,20 @@ void CommandsProcessingStore::privmsgToClient(Client& sender, std::string& targe
 
 void CommandsProcessingStore::privmsgToChannel(Client& sender, std::string& target, std::map<std::string, Channel*>& channels, std::string message) {
 
-	bool found = false;
-
+	std::cout << RED << "TARGET IS : " << target << std::endl << RESET;
 	if (target.empty()) {
+		std::cout << "ONE !" << std::endl;
 		sender.enqueueOutput(":myserver 401 " + getReplyTarget(sender) + " " + target + " :No such nick/channel");
 		return ;
 	}
 	std::map<std::string, Channel*>::iterator it = channels.find(target);
 	if(it != channels.end()) {
+		std::cout << "TWO !" << std::endl;
 		if (it->second->isMember(sender.getNormalizedRfcNickname())) {
-			it->second->broadcastMsg(sender.getNormalizedRfcNickname(), message);
+			std::string fullMsg = ":" + sender.getPrefix() + " PRIVMSG " + target + " :" + message;
+			it->second->broadcastMsg(sender.getNormalizedRfcNickname(), fullMsg);
 		} else {
+			std::cout << "THREE !" << std::endl;
 			sender.enqueueOutput(":myserver 404 " + getReplyTarget(sender) + " " + target + " :Cannot send to channel (not a member)");
 		}
 		return ;
@@ -286,7 +289,7 @@ void CommandsProcessingStore::commandPrivmsg(Command& command, Client& client, s
 		std::string target = strToLowerRFC(*it);
 
 		if (isChannel(*it)) {
-			privmsgToChannel(client, *it, channels, message);
+			privmsgToChannel(client, target, channels, message);
 		} else {
 			privmsgToClient(client, target, clients, message);
 		}
@@ -298,7 +301,7 @@ void CommandsProcessingStore::createChannel(Client& client, std::string& channel
 	std::string normName = strToLowerRFC(channelName);
 
 	std::map<std::string, Channel*>::iterator it = channels.find(normName);
-	Channel* chan = nullptr;
+	Channel* chan = NULL;
 
 	if (it != channels.end()) {
 		chan = it->second;
@@ -314,26 +317,62 @@ void CommandsProcessingStore::createChannel(Client& client, std::string& channel
 	client.enqueueOutput(welcomeMsg);
 }
 
-void CommandsProcessingStore::channelsJoinAttempt(Client& client, std::vector<std::string>& channelsNames, std::map<std::string, Channel*>& channels) {
+void CommandsProcessingStore::channelsAndKeysJoinAttempt(Client& client, std::vector<std::string>& channelsNames, const std::vector<std::string>& keys, std::map<std::string, Channel*>& channels) {
 
 	for (std::vector<std::string>::iterator it = channelsNames.begin(); it != channelsNames.end(); ++it) {
 
+		size_t index = it - channelsNames.begin();
 		std::string currentChanName = strToLowerRFC(*it);
 		std::map<std::string, Channel*>::iterator pos = channels.find(currentChanName);
+
 		if (pos != channels.end()) {
-			if (pos->second->isMember(client.getNormalizedRfcNickname())) {
+			Channel* chan = pos->second;
+
+			if (chan->isMember(client.getNormalizedRfcNickname())) {
 				client.enqueueOutput(":myserver 443 " + client.getNickname() + " " + *it + " :is already on channel");
 				continue ;
-			} else {
-				pos->second->addMember(&client);
-				std::string joinNotice = ":myserver NOTICE " + client.getNickname() + " :Welcome to " + pos->second->getChanName() + "!";
-				client.enqueueOutput(joinNotice);
 			}
+			if (chan->isKeyProtected()) {
+				if (index >= keys.size() || !chan->checkKey(keys.at(index))) {
+					client.enqueueOutput(":myserver 475 " + client.getNickname() + " " + *it + " :Cannot join channel (+k)");
+					continue ;
+				}
+			}
+			chan->addMember(&client);
+			std::string joinNotice = ":myserver NOTICE " + client.getNickname() + " :Welcome to " + chan->getChanName() + "!";
+			client.enqueueOutput(joinNotice);
+		}  else {
+			std::string key = (index < keys.size()) ? keys.at(index) : "";
+			createChannel(client, *it, channels, key);
+		}
+	}
+}
+
+void CommandsProcessingStore::channelsJoinAttempt(Client& client, std::vector<std::string>& channelsNames, std::map<std::string, Channel*>& channels) {
+
+	for (std::vector<std::string>::iterator it = channelsNames.begin(); it != channelsNames.end(); ++it) {
+		std::string currentChanName = strToLowerRFC(*it);
+		std::map<std::string, Channel*>::iterator pos = channels.find(currentChanName);
+
+		if (pos != channels.end()) {
+			Channel* chan = pos->second;
+			if (chan->isMember(client.getNormalizedRfcNickname())) {
+				client.enqueueOutput(":myserver 443 " + client.getNickname() + " " + *it + " :is already on channel");
+				continue;
+			}
+			if (chan->isKeyProtected()) {
+				client.enqueueOutput(":myserver 475 " + client.getNickname() + " " + *it + " :Cannot join channel (+k)");
+				continue;
+			}
+			chan->addMember(&client);
+			std::string joinNotice = ":myserver NOTICE " + client.getNickname() + " :Welcome to " + chan->getChanName() + "!";
+			client.enqueueOutput(joinNotice);
 		} else {
 			createChannel(client, *it, channels, "");
 		}
 	}
 }
+
 
 void CommandsProcessingStore::joinChannels(std::vector<std::string> channelsAndKeys, Client& client, std::map<std::string, Channel*>& channels) {
 
@@ -352,7 +391,7 @@ void CommandsProcessingStore::commandJoin(Command& command, Client& client, std:
 	(void)clients;
 	std::vector<std::string> params = command.getParams();
 	if (params.empty() || params.size() > 2) {
-		// message invalidite
+		client.enqueueOutput(":myserver 461 " + client.getNickname() + " JOIN :Not enough parameters");
 		return ;
 	}
 	joinChannels(params, client, channels);

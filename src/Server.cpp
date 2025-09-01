@@ -205,7 +205,7 @@ void Server::handleIncomingEvent(int fd) {
 	ExecutionStatus status = _incomingDataHandler.handle(_clients.at(fd));
 
 	if (status == READY_TO_EXECUTE) {
-		_executor.execute(_clients.at(fd), _clients);
+		_executor.execute(_clients.at(fd), _clients, _channels);
 	}
 	if (status == DISCONNECTION) {
 		handleClientDisconnection(fd);

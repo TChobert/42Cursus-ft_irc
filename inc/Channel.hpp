@@ -28,9 +28,14 @@ class Channel {
 
 	bool isMember(const std::string& nick) const;
 	bool isOperator(const std::string& nick) const;
+	bool isInviteOnly(void) const;
+	bool isKeyProtected(void) const;
+	bool isTopicRestrict(void) const;
+	size_t getUserLimit(void) const;
 	const std::string& getChanName(void) const;
 	const std::string& getChanTopic(void) const;
 	std::string getMembersListForIRC(void) const;
+	const std::string& getKey(void) const;
 
 	void addMember(Client* newMember);
 	void removeMember(Client& client);
@@ -40,4 +45,5 @@ class Channel {
 	std::string getNormalizedChanName(void);
 	void addOperator(Client& newOp);
 	void setKey(const std::string& key);
+	bool checkKey(const std::string& key) const;
 };

@@ -27,6 +27,7 @@ class CommandsProcessingStore {
 	bool privmsgTargetCheckup(const Client& sender, Client& target, const std::string& targetName, const std::string& message);
 	void joinChannels(std::vector<std::string> channelsAndKeys, Client& client, std::map<std::string, Channel*>& channels);
 	void channelsJoinAttempt(Client& client, std::vector<std::string>& channelsNames, std::map<std::string, Channel*>& channels);
+	void channelsAndKeysJoinAttempt(Client& client, std::vector<std::string>& channelsNames, const std::vector<std::string>& keys, std::map<std::string, Channel*>& channels);
 	void createChannel(Client& client, std::string& channelName, std::map<std::string, Channel*>& channels, const std::string& key);
 
 	public:
