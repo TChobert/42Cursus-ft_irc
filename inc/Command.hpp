@@ -21,7 +21,7 @@ enum commandType {
 	CMD_USER,
 	CMD_JOIN,
 	CMD_PRIVMSG,
-	//CMD_KICK,
+	CMD_KICK,
 	//CMD_INVITE,
 	//CMD_TOPIC,
 	//CMD_MODE,

@@ -413,6 +413,92 @@ void CommandsProcessingStore::commandQuit(Command& command, Client& client, std:
 	client.setDisconnectionStatus();
 }
 
+bool CommandsProcessingStore::checkChannelExistence(std::string& chanName, std::map<std::string, Channel*>& channels) {
+
+	if (chanName[0] != '#' || chanName.empty() || chanName.size() < 2)
+		return (false);
+
+	std::string normName = strToLowerRFC(chanName);
+	return (channels.count(normName));
+}
+
+void CommandsProcessingStore::handleSingleClientKicking(Command& command, Client& requester,  std::map<int, Client>& clients, std::map<std::string, Channel*>& channels) {
+
+	std::vector<std::string>params = command.getParams();
+	std::string chanName = strToLowerRFC(params[0]);
+	std::string victimName = strToLowerRFC(params[1]);
+	std::cout << "VICTIM NAME == " << victimName << std::endl;
+	
+	Client* victim = NULL;
+	for (std::map<int, Client>::iterator itClient = clients.begin(); itClient != clients.end(); ++itClient) {
+		if (itClient->second.getNormalizedRfcNickname() == victimName) {
+			victim = &itClient->second;
+			std::cout << "FIND NAME = " << victim->getNormalizedRfcNickname() << std::endl;
+			break;
+		}
+	}
+	if (!victim) {
+		requester.enqueueOutput(":myserver 401 " + requester.getNickname() + " " + victimName + " :No such nick");
+		return;
+	}
+
+	std::map<std::string, Channel*>::iterator it = channels.find(chanName);
+	Channel* chan = it->second;
+	if (!chan->isOperator(requester.getNormalizedRfcNickname())) {
+		requester.enqueueOutput(":myserver 482 " + requester.getNickname() + " " + chan->getChanName() + " :You're not channel operator");
+		return;
+	}
+	if (!chan->isMember(victim->getNormalizedRfcNickname())) {
+		requester.enqueueOutput(":myserver 441 " + requester.getNickname() + " " + victim->getNickname() + " " + chan->getChanName() + " :They aren't on that channel");
+		return;
+	}
+	std::string reason = command.getTrailing();
+	if (reason.empty()) reason = "Kicked by " + requester.getNickname();
+
+	std::string kickMsg = ":" + requester.getPrefix() + " KICK " + chan->getChanName() + " " + victim->getNickname() + " :" + reason;
+	chan->broadcastMsg("", kickMsg);
+	std::cout << "VICTIM POINTER: " << victim << std::endl;
+	std::cout << "VICTIM NAME: " << victim->getNickname() << std::endl;
+	std::cout << "REQUESTER POINTER: " << &requester << std::endl;
+	std::cout << "REQUESTER NAME: " << requester.getNickname() << std::endl;
+	chan->removeMember(*victim);
+}
+
+void CommandsProcessingStore::handleMultipleClientsKicking(std::vector<std::string>& params, Client& requester, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels) {
+
+	std::string chanName = params[0];
+	std::vector<std::string> victims = split(params[1], ",");
+	for (size_t i = 0; i < victims.size(); ++i) {
+
+		Command fakeCommand;
+		std::vector<std::string> fakeParams;
+		fakeParams.push_back(chanName);
+		fakeParams.push_back(victims[i]);
+		fakeCommand.setParams(fakeParams);
+		fakeCommand.setTrailing(params.size() > 2 ? params[2] : "");
+		handleSingleClientKicking(fakeCommand, requester, clients, channels);
+	}
+}
+
+void CommandsProcessingStore::commandKick(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels) {
+
+	std::vector<std::string> params = command.getParams();
+
+	if (params.empty() || params.size() > 2) {
+		//message pas assez d'arguments (ou trop ??)
+		return ;
+	}
+	if (!checkChannelExistence(params[0], channels)) {
+		client.enqueueOutput(":myserver 403 " + client.getNickname() + " " + params[0] + " :No such channel");
+		return ;
+	}
+	size_t pos = params[0].find_first_of(',');
+	if (pos == std::string::npos)
+		handleSingleClientKicking(command, client, clients, channels);
+	else
+		handleMultipleClientsKicking(params, client, clients, channels);
+}
+
 CommandsProcessingStore::CommandProcessPtr CommandsProcessingStore::getCommandProcess(Command& command) {
 
 	std::cout << "FUNCTION GET COMMAND PROCESS" << std::endl;
@@ -433,6 +519,8 @@ CommandsProcessingStore::CommandProcessPtr CommandsProcessingStore::getCommandPr
 			return (&CommandsProcessingStore::commandPrivmsg);
 		case CMD_QUIT:
 			return (&CommandsProcessingStore::commandQuit);
+		case CMD_KICK:
+			return (&CommandsProcessingStore::commandKick);
 		case CMD_UNKNOWN:
 			return (&CommandsProcessingStore::unknownCommand);
 	}

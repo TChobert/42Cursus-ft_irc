@@ -43,7 +43,24 @@ bool Channel::isMember(const std::string& nickname) const {
 }
 
 bool Channel::isOperator(const std::string& nickname) const {
-	return (_operators.count(nickname) != 0);
+    std::cout << "CHECKING IF '" << nickname << "' IS OPERATOR" << std::endl;
+    std::cout << "OPERATORS COUNT: " << _operators.size() << std::endl;
+    
+    // Si _operators est un std::map<std::string, quelque_chose>
+    for (std::set<std::string>::const_iterator it = _operators.begin(); it != _operators.end(); ++it) {
+        std::cout << "OPERATOR: '" << *it << "'" << std::endl;
+    }
+    
+    // Ou si _operators est un std::set<std::string>
+    /*
+    for (std::set<std::string>::const_iterator it = _operators.begin(); it != _operators.end(); ++it) {
+        std::cout << "OPERATOR: '" << *it << "'" << std::endl;
+    }
+    */
+    
+    bool result = (_operators.count(nickname) != 0);
+    std::cout << "IS OPERATOR RESULT: " << result << std::endl;
+    return result;
 }
 
 std::string Channel::getMembersListForIRC(void) const {

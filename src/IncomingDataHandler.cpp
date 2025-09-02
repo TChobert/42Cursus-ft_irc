@@ -56,6 +56,10 @@ commandParseStatus IncomingDataHandler::defineCommandType(Command& currentComman
 		currentCommand.setCommandType(CMD_PRIVMSG);
 		return (KNOWN_COMMAND);
 	}
+	else if (commandKey == "KICK") {
+		currentCommand.setCommandType(CMD_KICK);
+		return (KNOWN_COMMAND);
+	}
 	else if (commandKey == "QUIT") {
 		currentCommand.setCommandType(CMD_QUIT);
 		return (KNOWN_COMMAND);
@@ -88,7 +92,7 @@ commandParseStatus IncomingDataHandler::ensureCommandIsComplete(commandType type
 		case CMD_USER:
 		case CMD_JOIN:
 		case CMD_PRIVMSG:
-	//	case CMD_KICK:
+		case CMD_KICK:
 	//	case CMD_INVITE:
 	//	case CMD_TOPIC:
 	//	case CMD_MODE:
