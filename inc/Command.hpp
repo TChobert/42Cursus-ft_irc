@@ -25,7 +25,7 @@ enum commandType {
 	//CMD_INVITE,
 	//CMD_TOPIC,
 	//CMD_MODE,
-	//CMD_QUIT
+	CMD_QUIT
 };
 
 class Command {

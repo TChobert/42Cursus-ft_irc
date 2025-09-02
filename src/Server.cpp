@@ -12,6 +12,21 @@ void Server::disconnectClient(Client &client) {
 	 if (epoll_ctl(_epollFd, EPOLL_CTL_DEL, clientFd, NULL) < 0) {
 		perror("epoll_ctl DEL");
 	}
+	for (std::map<std::string, Channel*>::iterator it = _channels.begin(); it != _channels.end(); ) {
+		if (it->second->isMember(client.getNormalizedRfcNickname())) {
+			it->second->broadcastMsg(client.getNormalizedRfcNickname(), client.getQuitMessage());
+			it->second->removeMember(client);
+		}
+		if (it->second->isEmpty()) {
+			std::cout << RED << "[CHANNEL] ==> " << it->second->getChanName() << " is empty. Removing it form [SERVER]." << RESET << std::endl;
+			delete it->second;
+			std::map<std::string, Channel*>::iterator tmp = it;
+			++it;
+			_channels.erase(tmp);
+		} else {
+			++it;
+		}
+	}
 	_clients.erase(clientFd);
 	close(clientFd);
 }
@@ -256,10 +271,25 @@ void Server::manageEpollInterests(void) {
 			updateEpollInterest(it->second);
 }
 
+void Server::disconnectClients(void) {
+
+	std::vector<int> toDisconnect;
+
+	for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); ++it) {
+		if (it->second.getDisconnectionStatus()) {
+			toDisconnect.push_back(it->first);
+		}
+	}
+	for (size_t i = 0; i < toDisconnect.size(); ++i) {
+		disconnectClient(_clients.at(toDisconnect[i]));
+	}
+}
+
 void Server::run(void) {
 
 	while (true) {
 
+		disconnectClients();
 		manageEpollInterests();
 		int fdsNumber = epoll_wait(_epollFd, _events, MAX_EVENTS, -1);
 		if (fdsNumber == -1) {

@@ -18,6 +18,10 @@ bool Channel::isTopicRestrict(void) const {
 	return (_topicRestrict);
 }
 
+bool Channel::isEmpty(void) const {
+	return (_members.empty());
+}
+
 const std::string& Channel::getChanName(void) const {
 	return (_name);
 }
@@ -101,6 +105,7 @@ void Channel::removeMember(Client& client) {
 
 void Channel::broadcastMsg(const std::string& sender, const std::string& message) {
 
+	std::cout << YELLOW << "HERE BROADCAST !!" << RESET << std::endl;
 	for (std::map<std::string, Client*>::iterator it = _members.begin(); it != _members.end(); ++it) {
 		if (sender != it->second->getNormalizedRfcNickname()) {
 			it->second->enqueueOutput(message);

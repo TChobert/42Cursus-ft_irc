@@ -47,4 +47,5 @@ class CommandsProcessingStore {
 	void commandUser(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels);
 	void commandPrivmsg(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels);
 	void commandJoin(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels);
+	void commandQuit(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels);
 };

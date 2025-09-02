@@ -77,6 +77,14 @@ bool Client::isCrlfInInput(void) const {
 	return (_inputBuffer.find_first_of(CRLF) != std::string::npos);
 }
 
+const std::string& Client::getQuitMessage(void) const {
+	return (_quitMessage);
+}
+
+bool Client::getDisconnectionStatus(void) const {
+	return (_isDisconnectionPending);
+}
+
 ///// SETTERS /////
 
 void Client::setResponsePending(bool mode) {
@@ -103,6 +111,11 @@ void Client::setRegistered(bool reg) {
 	_isRegistered =  reg;
 }
 
+
+void Client::setDisconnectionStatus(bool status) {
+	_isDisconnectionPending = status;
+}
+
 void Client::appendInput(const char *input, const size_t len) {
 	_inputBuffer.append(input, len);
 }
@@ -122,4 +135,8 @@ void Client::flushOutputBuffer(void) {
 
 void Client::addCommand(Command& command) {
 	_commands.push_back(command);
+}
+
+void Client::setQuitMessage(std::string& quitMessage) {
+	_quitMessage = quitMessage;
 }

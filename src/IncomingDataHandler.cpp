@@ -55,7 +55,11 @@ commandParseStatus IncomingDataHandler::defineCommandType(Command& currentComman
 	else if (commandKey == "PRIVMSG") {
 		currentCommand.setCommandType(CMD_PRIVMSG);
 		return (KNOWN_COMMAND);
-	} 
+	}
+	else if (commandKey == "QUIT") {
+		currentCommand.setCommandType(CMD_QUIT);
+		return (KNOWN_COMMAND);
+	}
 	else {
 		currentCommand.setCommandType(CMD_UNKNOWN);
 		return (KNOWN_COMMAND);
