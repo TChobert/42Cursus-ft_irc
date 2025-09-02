@@ -43,6 +43,7 @@ class Channel {
 	void setChanName(const std::string& name);
 	void setTopic(const std::string& topic);
 	void broadcastMsg(const std::string& sender, const std::string& message);
+	void broadcastQuit(const std::string& message);
 	std::string getNormalizedChanName(void);
 	void addOperator(Client& newOp);
 	void setKey(const std::string& key);

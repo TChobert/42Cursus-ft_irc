@@ -14,7 +14,7 @@ void Server::disconnectClient(Client &client) {
 	}
 	for (std::map<std::string, Channel*>::iterator it = _channels.begin(); it != _channels.end(); ) {
 		if (it->second->isMember(client.getNormalizedRfcNickname())) {
-			it->second->broadcastMsg(client.getNormalizedRfcNickname(), client.getQuitMessage());
+			//it->second->broadcastQuit(client.getQuitMessage());
 			it->second->removeMember(client);
 		}
 		if (it->second->isEmpty()) {
@@ -29,6 +29,50 @@ void Server::disconnectClient(Client &client) {
 	_clients.erase(clientFd);
 	close(clientFd);
 }
+
+// void Server::disconnectClient(Client &client) {
+//     int clientFd = client.getFd();
+//     std::cout << RED << client.getPrefix() << " is now disconnected from [SERVER]" << RESET << std::endl;
+
+//     // Supprimer le client d'epoll dès le début
+//     if (epoll_ctl(_epollFd, EPOLL_CTL_DEL, clientFd, NULL) < 0) {
+//         perror("epoll_ctl DEL");
+//     }
+
+//     // Récupérer le message de QUIT
+//     std::string quitMsg = client.getQuitMessage();
+
+//     // 1️⃣ Diffuser le message de QUIT dans tous les channels où le client est membre
+//     for (std::map<std::string, Channel*>::iterator it = _channels.begin(); it != _channels.end(); ++it) {
+//         Channel* chan = it->second;
+//         if (chan->isMember(client.getNormalizedRfcNickname())) {
+//             // Ici on envoie à **tous les membres**, y compris le client
+//             chan->broadcastQuit(quitMsg);
+//         }
+//     }
+
+//     // 2️⃣ Retirer le client de tous les channels
+//     for (std::map<std::string, Channel*>::iterator it = _channels.begin(); it != _channels.end(); ) {
+//         Channel* chan = it->second;
+//         if (chan->isMember(client.getNormalizedRfcNickname())) {
+//             chan->removeMember(client);
+//         }
+
+//         // Supprimer le channel si vide
+//         if (chan->isEmpty()) {
+//             delete chan;
+//             std::map<std::string, Channel*>::iterator tmp = it;
+//             ++it;
+//             _channels.erase(tmp);
+//         } else {
+//             ++it;
+//         }
+//     }
+
+//     // 3️⃣ Supprimer le client de la liste et fermer le socket
+//     _clients.erase(clientFd);
+//     close(clientFd);
+// }
 
 void Server::handleClientDisconnection(int clientFd) {
 
@@ -266,9 +310,9 @@ void Server::run(void) {
 
 	while (true) {
 
-		disconnectClients();
 		handleMessagesToSend();
-		int fdsNumber = epoll_wait(_epollFd, _events, MAX_EVENTS, -1);
+		disconnectClients();
+		int fdsNumber = epoll_wait(_epollFd, _events, MAX_EVENTS, 50);
 		if (fdsNumber == -1) {
 			if (errno == EINTR) {
 				continue ;
@@ -279,6 +323,7 @@ void Server::run(void) {
 			}
 		}
 		handleNotifiedEvents(fdsNumber);
+		handleMessagesToSend();
 	}
 }
 
