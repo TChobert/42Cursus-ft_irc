@@ -206,17 +206,9 @@ void Server::initServer(void) {
 
 ///// MAIN PROCESS /////
 
-// void Server::handleOutgoingEvent(int fd) {
-
-// 	sendingStatus status = _outgoingDataHandler.handle(_clients.at(fd), _epollFd);
-// 	if (status == ERROR) {
-// 		disconnectClient(_clients.at(fd));
-// 	}
-// }
-
 void Server::handleIncomingEvent(int fd) {
 
-	ExecutionStatus status = _incomingDataHandler.handle(_clients.at(fd));
+	ExecutionStatus status = _incomingDataHandler.receiveDataFromClient(_clients.at(fd));
 
 	if (status == READY_TO_EXECUTE) {
 		_executor.execute(_clients.at(fd), _clients, _channels);
@@ -241,9 +233,6 @@ void Server::handleNotifiedEvents(int fdsNumber) {
 				handleClientDisconnection(currentFd);
 			} else if (currentEvent & EPOLLIN) {
 				handleIncomingEvent(currentFd);
-			// } else if (currentEvent & EPOLLOUT) {
-			// 	handleOutgoingEvent(currentFd);
-			// }
 			}
 		}
 	}
@@ -263,11 +252,22 @@ void Server::disconnectClients() {
 	}
 }
 
+void Server::handleMessagesToSend(void) {
+
+	for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); ++it) {
+		if (it->second.getResponsePending() && !it->second.getOutputBuffer().empty()) {
+			if (_outgoingDataHandler.sendResponseToClient(it->second, _epollFd) == ERROR)
+				handleClientDisconnection(it->first);
+			}
+		}
+}
+
 void Server::run(void) {
 
 	while (true) {
 
-	//	disconnectClients();
+		disconnectClients();
+		handleMessagesToSend();
 		int fdsNumber = epoll_wait(_epollFd, _events, MAX_EVENTS, -1);
 		if (fdsNumber == -1) {
 			if (errno == EINTR) {
@@ -279,12 +279,6 @@ void Server::run(void) {
 			}
 		}
 		handleNotifiedEvents(fdsNumber);
-		for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); ++it) {
-			if (it->second.getResponsePending() && !it->second.getOutputBuffer().empty()) {
-				if (_outgoingDataHandler.handle(it->second, _epollFd) == ERROR)
-					handleClientDisconnection(it->first);
-			}
-		}
 	}
 }
 

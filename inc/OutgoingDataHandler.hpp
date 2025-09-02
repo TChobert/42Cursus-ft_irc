@@ -29,5 +29,5 @@ class OutgoingDataHandler {
 	OutgoingDataHandler(void);
 	~OutgoingDataHandler(void);
 
-	sendingStatus handle(Client& client, int& epollFd);
+	sendingStatus sendResponseToClient(Client& client, int& epollFd);
 };

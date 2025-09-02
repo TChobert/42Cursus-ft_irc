@@ -51,7 +51,7 @@ class Server {
 	void run(void);
 	void handleNotifiedEvents(int fdsNumber);
 	void handleIncomingEvent(int fd);
-	void handleOutgoingEvent(int fd);
+	void handleMessagesToSend(void);
 	void initServer(void);
 	void socketInitProcess(void);
 	void setSocketImmediatReuse(void);

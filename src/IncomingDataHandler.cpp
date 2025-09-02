@@ -80,7 +80,7 @@ commandParseStatus IncomingDataHandler::defineCommandType(Command& currentComman
 commandParseStatus IncomingDataHandler::ensureCommandIsComplete(commandType type) {
 
   switch (type) {
-	//	case CMD_QUIT:
+		case CMD_QUIT:
 		case CMD_PING:
 			return COMPLETE_COMMAND;
 		case CMD_PASS:
@@ -219,7 +219,7 @@ readStatus IncomingDataHandler::readIncomingData(Client& client) {
 	}
 }
 
-ExecutionStatus IncomingDataHandler::handle(Client& client) {
+ExecutionStatus IncomingDataHandler::receiveDataFromClient(Client& client) {
 
 	std::cout << "FUNCTION HANDLE INCOMING DATA" << std::endl;
 	readStatus status = readIncomingData(client);

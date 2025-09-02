@@ -105,9 +105,16 @@ void Channel::removeMember(Client& client) {
 
 void Channel::broadcastMsg(const std::string& sender, const std::string& message) {
 
+	std::cout << "[DEBUG] Broadcasting from " << sender << " to channel members:\n";
 	for (std::map<std::string, Client*>::iterator it = _members.begin(); it != _members.end(); ++it) {
+		std::cout << "  -> " << it->first 
+                  << " (client nick: " << it->second->getNormalizedRfcNickname() << ")\n";
 		if (sender != it->second->getNormalizedRfcNickname()) {
 			it->second->enqueueOutput(message);
+			std::cout << "     Enqueued to " << it->first << "\n";
+			std::cerr << "[BROADCAST TO " << it->second->getNickname()
+          << "] -> '" << message << "'" << std::endl;
+
 		}
 	}
 }

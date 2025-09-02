@@ -51,6 +51,6 @@ class IncomingDataHandler {
 	IncomingDataHandler(void);
 	~IncomingDataHandler(void);
 
-	ExecutionStatus handle(Client& client);
+	ExecutionStatus receiveDataFromClient(Client& client);
 };
 

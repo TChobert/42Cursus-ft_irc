@@ -405,9 +405,9 @@ void CommandsProcessingStore::commandQuit(Command& command, Client& client, std:
 	std::string quitMessage;
 
 	if (!message.empty()) {
-		quitMessage = ":" + client.getPrefix() + " QUIT :" + message;
+		quitMessage = client.getPrefix() + " QUIT :" + message;
 	} else {
-		quitMessage = ":" + client.getPrefix() + " QUIT :Client Quit";
+		quitMessage = client.getPrefix() + " QUIT :Client Quit";
 	}
 	client.setQuitMessage(quitMessage);
 	client.setDisconnectionStatus();
