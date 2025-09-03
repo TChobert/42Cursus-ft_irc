@@ -537,6 +537,45 @@ void CommandsProcessingStore::commandInvite(Command& command, Client& requester,
 	guest->enqueueOutput(requester.getPrefix() + " INVITE " + guest->getNickname() + " :" + params[1]);
 }
 
+void CommandsProcessingStore::commandTopic(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels) {
+
+	(void)clients;
+	std::vector<std::string> params = command.getParams();
+
+	if (params.empty()) {
+		client.enqueueOutput(":myserver 461 " + client.getNickname() + " TOPIC :Not enough parameters");
+		return ;
+	}
+	std::string chanName = strToLowerRFC(params[0]);
+	if (!checkChannelExistence(chanName, channels)) {
+		client.enqueueOutput(":myserver 403 " + client.getNickname() + " " + params[0] + " :No such channel");
+		return ;
+	}
+	Channel* chan = channels[chanName];
+	if (!chan->isMember(client.getNormalizedRfcNickname())) {
+		client.enqueueOutput(":myserver 442 " + client.getNickname() + " " + chanName + " :You're not on that channel");
+		return ;
+	}
+	std::string topicNewName = command.getTrailing();
+	 if (!topicNewName.empty()) {
+		if (chan->isTopicRestrict() && !chan->isOperator(client.getNormalizedRfcNickname())) {
+			client.enqueueOutput(":myserver 482 " + client.getNickname() + " " + chanName + " :You're not channel operator");
+			return ;
+		}
+		chan->setTopic(topicNewName, &client);
+
+		std::string msg = ":" + client.getPrefix() + " TOPIC " + chanName + " :" + topicNewName;
+		chan->broadcastMsg("", msg);
+	} else {
+		std::string topic = chan->getChanTopic();
+		if (!topic.empty()) {
+			client.enqueueOutput(":myserver 332 " + client.getNickname() + " " + chanName + " :" + topic);
+		} else {
+			client.enqueueOutput(":myserver 331 " + client.getNickname() + " " + chanName + " :No topic is set");
+		}
+	}
+}
+
 CommandsProcessingStore::CommandProcessPtr CommandsProcessingStore::getCommandProcess(Command& command) {
 
 	std::cout << "FUNCTION GET COMMAND PROCESS" << std::endl;
@@ -561,6 +600,8 @@ CommandsProcessingStore::CommandProcessPtr CommandsProcessingStore::getCommandPr
 			return (&CommandsProcessingStore::commandKick);
 		case CMD_INVITE:
 			return (&CommandsProcessingStore::commandInvite);
+		case CMD_TOPIC:
+			return (&CommandsProcessingStore::commandTopic);
 		case CMD_UNKNOWN:
 			return (&CommandsProcessingStore::unknownCommand);
 	}

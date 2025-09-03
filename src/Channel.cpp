@@ -1,6 +1,6 @@
 #include "Channel.hpp"
 
-Channel::Channel(std::string name) : _name(name), _key(""), _inviteOnly(false), _topicRestrict(false), _userLimit(0) {}
+Channel::Channel(std::string name) : _name(name), _topic(""), _key(""), _topicSetter(""), _inviteOnly(false), _topicRestrict(false), _userLimit(0), _topicTimestamp(0) {}
 
 Channel::~Channel(void) {}
 
@@ -70,8 +70,15 @@ void Channel::setChanName(const std::string& name) {
 	_name = name;
 }
 
-void Channel::setTopic(const std::string& topic) {
+void Channel::setTopic(const std::string& topic, const Client *setter) {
+
 	_topic = topic;
+	if (setter) {
+		_topicSetter = setter->getNormalizedRfcNickname();
+	} else {
+		_topicSetter = "myserver";
+	}
+	_topicTimestamp = std::time(NULL);
 }
 
 void Channel::setKey(const std::string& key) {
@@ -85,9 +92,17 @@ void Channel::addMember(Client* newMember) {
 	std::string joinMsg = ":" + newMember->getPrefix() + " JOIN " + _name;
 	broadcastMsg(newMember->getNormalizedRfcNickname(), joinMsg);
 
+	std::ostringstream oss;
+	oss << _topicTimestamp;
 	std::string memberList = getMembersListForIRC();
 	newMember->enqueueOutput(":myserver 353 " + newMember->getNickname() + " = " + _name + " :" + memberList);
 	newMember->enqueueOutput(":myserver 366 " + newMember->getNickname() + " " + _name + " :End of NAMES list");
+	if (!_topic.empty()) {
+		newMember->enqueueOutput(":myserver 332 " + newMember->getNickname() + " " + _name + " :" + _topic);
+		newMember->enqueueOutput(":myserver 333 " + newMember->getNickname() + " " + _name + " " + _topicSetter + " " + oss.str());
+	} else {
+		newMember->enqueueOutput(":myserver 331 " + newMember->getNickname() + " " + _name + " :No topic is set");
+	}
 }
 
 void Channel::addOperator(Client& newOp) {

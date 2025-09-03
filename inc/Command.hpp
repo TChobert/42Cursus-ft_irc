@@ -23,7 +23,7 @@ enum commandType {
 	CMD_PRIVMSG,
 	CMD_KICK,
 	CMD_INVITE,
-	//CMD_TOPIC,
+	CMD_TOPIC,
 	//CMD_MODE,
 	CMD_QUIT
 };

@@ -68,6 +68,10 @@ commandParseStatus IncomingDataHandler::defineCommandType(Command& currentComman
 		currentCommand.setCommandType(CMD_INVITE);
 		return (KNOWN_COMMAND);
 	}
+	else if (commandKey == "TOPIC") {
+		currentCommand.setCommandType(CMD_TOPIC);
+		return (KNOWN_COMMAND);
+	}
 	else {
 		currentCommand.setCommandType(CMD_UNKNOWN);
 		return (KNOWN_COMMAND);

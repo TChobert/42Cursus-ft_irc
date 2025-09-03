@@ -4,6 +4,8 @@
 #include <string>
 #include <set>
 #include <cstdlib>
+#include <ctime>
+#include <sstream>
 
 #include "Client.hpp"
 
@@ -14,9 +16,11 @@ class Channel {
 	std::string _name;
 	std::string _topic;
 	std::string _key;
+	std::string _topicSetter;
 	bool _inviteOnly;
 	bool _topicRestrict;
 	size_t _userLimit;
+	std::time_t _topicTimestamp;
 
 	std::map<std::string, Client*> _members;
 	std::set<std::string> _operators;
@@ -41,7 +45,7 @@ class Channel {
 	void addMember(Client* newMember);
 	void removeMember(Client& client);
 	void setChanName(const std::string& name);
-	void setTopic(const std::string& topic);
+	void setTopic(const std::string& topic, const Client *setter);
 	void broadcastMsg(const std::string& sender, const std::string& message);
 	void broadcastQuit(const std::string& message);
 	std::string getNormalizedChanName(void);
