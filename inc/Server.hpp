@@ -12,6 +12,8 @@
 #include <sstream>
 #include <netinet/in.h>
 #include <cerrno>
+#include <ctype.h>
+#include <csignal>
 
 #include "Client.hpp"
 #include "Channel.hpp"
@@ -26,6 +28,8 @@
 #define RESET "\033[0m"
 
 #define MAX_EVENTS 64
+
+void signalHandler(int signal);
 
 class Server {
 
@@ -69,7 +73,9 @@ class Server {
 	void disconnectClient(Client& client);
 	void handleClientDisconnection(int clientFd);
 	void disconnectClients(void);
-	//void deleteAllNetwork(void);
+	void disconnectAllClients(void);
+	void deleteAllChannels(void);
+	void deleteAllNetwork(void);
 
 	int getServerSocket(void) const;
 };

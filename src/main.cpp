@@ -3,8 +3,12 @@
 #include "ProgramInputParser.hpp"
 #include "Server.hpp"
 
+volatile sig_atomic_t gSignalStatus = 0;
+
 int main(int ac, char **av) {
 
+	std::signal(SIGINT, signalHandler);
+	std::signal(SIGTERM, signalHandler);
 	if (ac != 3) {
 		std::cerr << "Invalid mumber of arguments. A port and a password are required to launch this IRC server" << std::endl;
 	}

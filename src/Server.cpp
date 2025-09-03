@@ -1,8 +1,43 @@
 #include "Server.hpp"
 
+extern volatile sig_atomic_t gSignalStatus;
+
 Server::Server(const uint16_t port, const std::string pswd) : _port(port), _serverSocket(-1), _pswd(pswd), _executor(pswd) {}
 
 Server::~Server(void) {}
+
+void signalHandler(int signal) {
+	gSignalStatus = signal;
+}
+
+void Server::disconnectAllClients(void) {
+
+	std::map<int, Client> toDelete;
+
+	toDelete.swap(_clients);
+	for (std::map<int, Client>::iterator it = toDelete.begin(); it != toDelete.end(); ++it) {
+		disconnectClient(it->second);
+	}
+}
+
+void Server::deleteAllChannels(void) {
+
+	std::map<std::string, Channel*> toDelete;
+
+	toDelete.swap(_channels);
+	for (std::map<std::string, Channel*>::iterator it = toDelete.begin(); it != toDelete.end(); ++it) {
+		if (it->second != NULL)
+			delete it->second;
+	}
+}
+
+void Server::deleteAllNetwork(void) {
+
+	disconnectAllClients();
+	deleteAllChannels();
+	if (_epollFd >= 0)
+		close (_epollFd);
+}
 
 void Server::disconnectClient(Client &client) {
 
@@ -264,7 +299,7 @@ void Server::handleMessagesToSend(void) {
 
 void Server::run(void) {
 
-	while (true) {
+	while (gSignalStatus == 0) {
 
 		handleMessagesToSend();
 		disconnectClients();
@@ -274,13 +309,14 @@ void Server::run(void) {
 				continue ;
 			}
 			else {
-				//deleteAllNetwork();
+				deleteAllNetwork();
 				throw std::runtime_error("Critical epoll_wait error. Server interruption.");
 			}
 		}
 		handleNotifiedEvents(fdsNumber);
 		handleMessagesToSend();
 	}
+	deleteAllNetwork();
 }
 
 ///// GETTERS /////
