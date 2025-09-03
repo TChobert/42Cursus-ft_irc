@@ -45,6 +45,7 @@ class IncomingDataHandler {
 	void getParamsAndTrailing(std::string& line, Command& currentCommand, size_t& index);
 	void addCommandToList(Client& client, Command& command);
 	void trimSpaces(std::string& str);
+	void splitAndAddParams(std::string params, Command& currentCommand);
 
 	public:
 

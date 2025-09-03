@@ -32,6 +32,7 @@ class CommandsProcessingStore {
 	bool checkChannelExistence(std::string& chanName, std::map<std::string, Channel*>& channels);
 	void handleSingleClientKicking(Command& command, Client& requester, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels);
 	void handleMultipleClientsKicking(std::vector<std::string>& params, Client& requester, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels);
+	Client *getClientByName(const std::string& target, std::map<int, Client>& clients) const;
 
 	public:
 
@@ -52,4 +53,5 @@ class CommandsProcessingStore {
 	void commandJoin(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels);
 	void commandQuit(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels);
 	void commandKick(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels);
+	void commandInvite(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels);
 };

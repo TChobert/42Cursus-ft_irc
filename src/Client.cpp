@@ -1,6 +1,6 @@
 #include "Client.hpp"
 
-Client::Client(int fd) : _fd(fd), _isRegistered(false), _isResponsePending(false), _needEpollReset(false), _disconnectionPending(false), _nickname("*") {}
+Client::Client(int fd) : _fd(fd), _isRegistered(false), _isResponsePending(false), _needEpollReset(false), _disconnectionPending(false), _nickname("*"), _hostname("localhost") {}
 
 Client::~Client(void) {} // TO COMPLETE
 

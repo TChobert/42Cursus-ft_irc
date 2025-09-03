@@ -1,6 +1,6 @@
 #include "Channel.hpp"
 
-Channel::Channel(std::string name) : _name(name), _inviteOnly(false), _topicRestrict(false), _userLimit(0) {}
+Channel::Channel(std::string name) : _name(name), _key(""), _inviteOnly(false), _topicRestrict(false), _userLimit(0) {}
 
 Channel::~Channel(void) {}
 
@@ -43,24 +43,7 @@ bool Channel::isMember(const std::string& nickname) const {
 }
 
 bool Channel::isOperator(const std::string& nickname) const {
-    std::cout << "CHECKING IF '" << nickname << "' IS OPERATOR" << std::endl;
-    std::cout << "OPERATORS COUNT: " << _operators.size() << std::endl;
-    
-    // Si _operators est un std::map<std::string, quelque_chose>
-    for (std::set<std::string>::const_iterator it = _operators.begin(); it != _operators.end(); ++it) {
-        std::cout << "OPERATOR: '" << *it << "'" << std::endl;
-    }
-    
-    // Ou si _operators est un std::set<std::string>
-    /*
-    for (std::set<std::string>::const_iterator it = _operators.begin(); it != _operators.end(); ++it) {
-        std::cout << "OPERATOR: '" << *it << "'" << std::endl;
-    }
-    */
-    
-    bool result = (_operators.count(nickname) != 0);
-    std::cout << "IS OPERATOR RESULT: " << result << std::endl;
-    return result;
+	return (_operators.count(nickname) != 0);
 }
 
 std::string Channel::getMembersListForIRC(void) const {

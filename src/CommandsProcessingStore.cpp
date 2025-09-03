@@ -307,8 +307,9 @@ void CommandsProcessingStore::createChannel(Client& client, std::string& channel
 		chan = it->second;
 	} else {
 		chan = new Channel(channelName);
-		if (!key.empty())
+		if (!key.empty()) {
 			chan->setKey(key);
+		}
 		channels[normName] = chan;
 	}
 	chan->addMember(&client);
@@ -342,7 +343,7 @@ void CommandsProcessingStore::channelsAndKeysJoinAttempt(Client& client, std::ve
 			std::string joinNotice = ":myserver NOTICE " + client.getNickname() + " :Welcome to " + chan->getChanName() + "!";
 			client.enqueueOutput(joinNotice);
 		}  else {
-			std::string key = (index < keys.size()) ? keys.at(index) : "";
+			std::string key = (index < keys.size()) ? keys.at(index) : std::string();
 			createChannel(client, *it, channels, key);
 		}
 	}
@@ -368,7 +369,7 @@ void CommandsProcessingStore::channelsJoinAttempt(Client& client, std::vector<st
 			std::string joinNotice = ":myserver NOTICE " + client.getNickname() + " :Welcome to " + chan->getChanName() + "!";
 			client.enqueueOutput(joinNotice);
 		} else {
-			createChannel(client, *it, channels, "");
+			createChannel(client, *it, channels, std::string());
 		}
 	}
 }
@@ -422,21 +423,25 @@ bool CommandsProcessingStore::checkChannelExistence(std::string& chanName, std::
 	return (channels.count(normName));
 }
 
+Client *CommandsProcessingStore::getClientByName(const std::string& wanted, std::map<int, Client>& clients) const {
+
+	Client *found = NULL;
+	for (std::map<int, Client>::iterator itClient = clients.begin(); itClient != clients.end(); ++itClient) {
+		if (itClient->second.getNormalizedRfcNickname() == wanted) {
+			found = &itClient->second;
+			break;
+		}
+	}
+	return (found);
+}
+
 void CommandsProcessingStore::handleSingleClientKicking(Command& command, Client& requester,  std::map<int, Client>& clients, std::map<std::string, Channel*>& channels) {
 
 	std::vector<std::string>params = command.getParams();
 	std::string chanName = strToLowerRFC(params[0]);
 	std::string victimName = strToLowerRFC(params[1]);
-	std::cout << "VICTIM NAME == " << victimName << std::endl;
-	
-	Client* victim = NULL;
-	for (std::map<int, Client>::iterator itClient = clients.begin(); itClient != clients.end(); ++itClient) {
-		if (itClient->second.getNormalizedRfcNickname() == victimName) {
-			victim = &itClient->second;
-			std::cout << "FIND NAME = " << victim->getNormalizedRfcNickname() << std::endl;
-			break;
-		}
-	}
+
+	Client *victim = getClientByName(victimName, clients);
 	if (!victim) {
 		requester.enqueueOutput(":myserver 401 " + requester.getNickname() + " " + victimName + " :No such nick");
 		return;
@@ -457,10 +462,6 @@ void CommandsProcessingStore::handleSingleClientKicking(Command& command, Client
 
 	std::string kickMsg = ":" + requester.getPrefix() + " KICK " + chan->getChanName() + " " + victim->getNickname() + " :" + reason;
 	chan->broadcastMsg("", kickMsg);
-	std::cout << "VICTIM POINTER: " << victim << std::endl;
-	std::cout << "VICTIM NAME: " << victim->getNickname() << std::endl;
-	std::cout << "REQUESTER POINTER: " << &requester << std::endl;
-	std::cout << "REQUESTER NAME: " << requester.getNickname() << std::endl;
 	chan->removeMember(*victim);
 }
 
@@ -499,6 +500,43 @@ void CommandsProcessingStore::commandKick(Command& command, Client& client, std:
 		handleMultipleClientsKicking(params, client, clients, channels);
 }
 
+void CommandsProcessingStore::commandInvite(Command& command, Client& requester, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels) {
+
+	std::vector<std::string> params = command.getParams();
+
+	if (params.size() != 2) {
+		requester.enqueueOutput(":myserver 461 " + requester.getNickname() + " INVITE :Not enough parameters");
+		return ;
+	}
+	std::string targetNick = strToLowerRFC(params[0]);
+	std::string chanName   = strToLowerRFC(params[1]);
+
+	if (!checkChannelExistence(chanName, channels)) {
+		requester.enqueueOutput(":myserver 403 " + requester.getNickname() + " " + params[1] + " :No such channel");
+		return ;
+	}
+	Channel* chan = channels[chanName];
+	Client* guest = getClientByName(targetNick, clients);
+	if (guest == NULL) {
+		requester.enqueueOutput(":myserver 401 " + requester.getNickname() + " " + params[0] + " :No such nick/channel");
+		return ;
+	}
+	if (!chan->isMember(requester.getNormalizedRfcNickname())) {
+		requester.enqueueOutput(":myserver 442 " + requester.getNickname() + " " + params[1] + " :You're not on that channel");
+		return ;
+	}
+	if (chan->isMember(guest->getNormalizedRfcNickname())) {
+		requester.enqueueOutput(":myserver 443 " + requester.getNickname() + " " + guest->getNickname() + " " + params[1] + " :is already on channel");
+		return;
+	}
+	if (chan->isInviteOnly() && !chan->isOperator(requester.getNormalizedRfcNickname())) {
+		requester.enqueueOutput(":myserver 482 " + requester.getNickname() + " " + params[1] + " :You're not channel operator");
+		return ;
+	}
+	requester.enqueueOutput(":myserver 341 " + requester.getNickname() + " " + guest->getNickname() + " " + params[1]);
+	guest->enqueueOutput(requester.getPrefix() + " INVITE " + guest->getNickname() + " :" + params[1]);
+}
+
 CommandsProcessingStore::CommandProcessPtr CommandsProcessingStore::getCommandProcess(Command& command) {
 
 	std::cout << "FUNCTION GET COMMAND PROCESS" << std::endl;
@@ -521,21 +559,9 @@ CommandsProcessingStore::CommandProcessPtr CommandsProcessingStore::getCommandPr
 			return (&CommandsProcessingStore::commandQuit);
 		case CMD_KICK:
 			return (&CommandsProcessingStore::commandKick);
+		case CMD_INVITE:
+			return (&CommandsProcessingStore::commandInvite);
 		case CMD_UNKNOWN:
 			return (&CommandsProcessingStore::unknownCommand);
 	}
 }
-
-// std::vector<std::string> split(const std::string& s, const std::string& delimiter) {
-//     std::vector<std::string> tokens;
-//     size_t pos = 0;
-//     std::string token;
-//     while ((pos = s.find(delimiter)) != std::string::npos) {
-//         token = s.substr(0, pos);
-//         tokens.push_back(token);
-//         s.erase(0, pos + delimiter.length());
-//     }
-//     tokens.push_back(s);
-
-//     return tokens;
-// }

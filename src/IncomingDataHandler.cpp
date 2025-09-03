@@ -64,6 +64,10 @@ commandParseStatus IncomingDataHandler::defineCommandType(Command& currentComman
 		currentCommand.setCommandType(CMD_QUIT);
 		return (KNOWN_COMMAND);
 	}
+	else if (commandKey == "INVITE") {
+		currentCommand.setCommandType(CMD_INVITE);
+		return (KNOWN_COMMAND);
+	}
 	else {
 		currentCommand.setCommandType(CMD_UNKNOWN);
 		return (KNOWN_COMMAND);
@@ -93,7 +97,7 @@ commandParseStatus IncomingDataHandler::ensureCommandIsComplete(commandType type
 		case CMD_JOIN:
 		case CMD_PRIVMSG:
 		case CMD_KICK:
-	//	case CMD_INVITE:
+		case CMD_INVITE:
 	//	case CMD_TOPIC:
 	//	case CMD_MODE:
 			return UNCOMPLETE_COMMAND;
@@ -122,13 +126,39 @@ void IncomingDataHandler::getCommand(std::string& line, Command& currentCommand,
 	index += commandKey.size();
 }
 
-void splitAndAddParams(std::string params, Command& currentCommand) {
+// void IncomingDataHandler::splitAndAddParams(std::string params, Command& currentCommand) {
 
-	std::stringstream ss(params);
-	std::string currentParam;
+// 	std::stringstream ss(params);
+// 	std::string currentParam;
 
-	while (ss >> currentParam) {
-		currentCommand.addParam(currentParam);
+// 	while (ss >> currentParam) {
+// 		currentCommand.addParam(currentParam);
+// 	}
+// }
+
+void IncomingDataHandler::splitAndAddParams(std::string params, Command& currentCommand) {
+
+	if (params.empty()) return;
+
+	std::string trimmed = params;
+
+	while (!trimmed.empty() && trimmed[0] == ' ')
+		trimmed.erase(0, 1);
+    while (!trimmed.empty() && trimmed[trimmed.length() - 1] == ' ')
+		trimmed.erase(trimmed.length() - 1, 1);
+
+	size_t pos = 0;
+	while (pos < trimmed.length()) {
+		size_t spacePos = trimmed.find(' ', pos);
+		if (spacePos == std::string::npos) {
+			currentCommand.addParam(trimmed.substr(pos));
+			break;
+		} else {
+			currentCommand.addParam(trimmed.substr(pos, spacePos - pos));
+			pos = spacePos + 1;
+			while (pos < trimmed.length() && trimmed[pos] == ' ')
+			pos++;
+		}
 	}
 }
 
@@ -186,6 +216,11 @@ void IncomingDataHandler::parseCommands(Client& client) {
 		commandParseStatus status = IN_PROGRESS;
 
 		std::string line = buffer.substr(0, pos);
+		 std::cout << "RAW LINE: [" << line << "] length: " << line.length() << std::endl;
+		for (size_t i = 0; i < line.length(); i++) {
+			std::cout << YELLOW << "line[" << i << "] = '" << line[i] << "' (ASCII: " << (int)line[i] << ")" << RESET;
+			std::cout << std::endl;
+		}
 		buffer.erase(0, pos + 2);
  		if (line.empty())
 			continue;
