@@ -759,6 +759,7 @@ void CommandsProcessingStore::commandMode(Command& command, Client& client, std:
 		}
 		Channel *chan = channels[chanName];
 		if (!chan->isOperator(client.getNormalizedRfcNickname())) {
+			client.enqueueOutput(":myserver 482 " + client.getNickname() + " " + chanName + " :You're not channel operator");
 			return ;
 		}
 		if (params[1].empty() || (params[1][0] != '+' && params[1][0] != '-')) {
