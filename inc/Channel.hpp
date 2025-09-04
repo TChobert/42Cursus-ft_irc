@@ -53,6 +53,7 @@ class Channel {
 	void broadcastQuit(const std::string& message);
 	std::string getNormalizedChanName(void);
 	void addOperator(Client& newOp);
+	void removeOperator(Client& toRemove);
 	void setKey(const std::string& key);
 	bool checkKey(const std::string& key) const;
 	void setInviteOnly(bool mode);

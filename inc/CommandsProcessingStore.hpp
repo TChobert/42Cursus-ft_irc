@@ -42,7 +42,7 @@ class CommandsProcessingStore {
 	std::vector<modeChange> getModeFlags(const std::string& modesStr);
 	void applyModeFlags(Client& client, std::map<int, Client>& clients, std::vector<modeChange>& flags, std::vector<std::string>& params, Channel *chan, size_t& paramIndex);
 	bool setNewChanKey(Client& client, std::string& param, Channel *chan);
-	bool setNewChanOperator(Client& requester, std::map<int, Client>& clients, std::string& param, Channel *channel);
+	bool setChanOperator(Client& requester, std::map<int, Client>& clients, modeChange& currentMode, std::string& param, Channel *channel);
 	bool setChanNewUserLimit(Client& client, std::string& param, Channel *channel);
 	void displayChannelParameters(std::string& channelName, Client& requester, std::map<std::string, Channel*> channels);
 

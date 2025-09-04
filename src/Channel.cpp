@@ -117,6 +117,12 @@ void Channel::addOperator(Client& newOp) {
 	_operators.insert(newOp.getNormalizedRfcNickname());
 }
 
+void Channel::removeOperator(Client& toRemove) {
+
+	std::string nick = toRemove.getNormalizedRfcNickname();
+	_operators.erase(nick);
+}
+
 void Channel::removeMember(Client& client) {
 
 	const std::string nickname = client.getNormalizedRfcNickname();

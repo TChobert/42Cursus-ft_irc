@@ -557,7 +557,7 @@ void CommandsProcessingStore::commandTopic(Command& command, Client& client, std
 		return ;
 	}
 	std::string topicNewName = command.getTrailing();
-	 if (!topicNewName.empty()) {
+	if (!topicNewName.empty()) {
 		if (chan->isTopicRestrict() && !chan->isOperator(client.getNormalizedRfcNickname())) {
 			client.enqueueOutput(":myserver 482 " + client.getNickname() + " " + chanName + " :You're not channel operator");
 			return ;
@@ -610,7 +610,7 @@ bool CommandsProcessingStore::setNewChanKey(Client& requester, std::string& para
 	return (true);
 }
 
-bool CommandsProcessingStore::setNewChanOperator(Client& requester, std::map<int, Client>& clients, std::string& param, Channel *channel) {
+bool CommandsProcessingStore::setChanOperator(Client& requester, std::map<int, Client>& clients, modeChange& currentMode, std::string& param, Channel *channel) {
 
 	std::string targetNick = strToLowerRFC(param);
 
@@ -619,7 +619,11 @@ bool CommandsProcessingStore::setNewChanOperator(Client& requester, std::map<int
 		return (false);
 	}
 	Client *newModo = getClientByName(targetNick, clients);
-	channel->addOperator(*newModo);
+	if (currentMode.adding) {
+		channel->addOperator(*newModo);
+	} else if (!currentMode.adding) {
+		channel->removeOperator(*newModo);
+	}
 	return (true);
 }
 
@@ -677,14 +681,14 @@ void CommandsProcessingStore::applyModeFlags(Client& client, std::map<int, Clien
 				if (paramIndex >= params.size()) {
 					client.enqueueOutput(":myserver 461 " + client.getNickname() + " MODE :Not enough parameters");
 				} else {
-					success = setNewChanOperator(client, clients, params[paramIndex], chan);
+					success = setChanOperator(client, clients, currentMode, params[paramIndex], chan);
 					if (success)
 						modeParams += " " + params[paramIndex];
 					++paramIndex;
 				}
 				break;
 
-				case 'l':
+			case 'l':
 				if (currentMode.adding) {
 					if (paramIndex >= params.size()) {
 						client.enqueueOutput(":myserver 461 " + client.getNickname() + " MODE :Not enough parameters");
