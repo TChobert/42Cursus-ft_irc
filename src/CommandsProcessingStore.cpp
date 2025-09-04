@@ -647,69 +647,67 @@ void CommandsProcessingStore::applyModeFlags(Client& client, std::map<int, Clien
 		bool success = false;
 
 		switch (currentMode.mode) {
-            case 'i':
-                chan->setInviteOnly(currentMode.adding);
-                success = true;
-                break;
+			case 'i':
+				chan->setInviteOnly(currentMode.adding);
+				success = true;
+				break;
 
-            case 't':
-                chan->setTopicRestrict(currentMode.adding);
-                success = true;
-                break;
+			case 't':
+				chan->setTopicRestrict(currentMode.adding);
+				success = true;
+				break;
 
-            case 'k':
-                if (currentMode.adding) {
-                    if (paramIndex >= params.size()) {
-                        client.enqueueOutput(":myserver 461 " + client.getNickname() + " MODE :Not enough parameters");
-                    } else {
-                        success = setNewChanKey(client, params[paramIndex], chan);
-                        if (success)
-                            modeParams += " " + params[paramIndex];
-                        ++paramIndex;
-                    }
-                } else {
-                    chan->removeKey();
-                    success = true;
-                }
-                break;
+			case 'k':
+				if (currentMode.adding) {
+					if (paramIndex >= params.size()) {
+						client.enqueueOutput(":myserver 461 " + client.getNickname() + " MODE :Not enough parameters");
+					} else {
+						success = setNewChanKey(client, params[paramIndex], chan);
+						if (success)
+							modeParams += " " + params[paramIndex];
+						++paramIndex;
+					}
+				} else {
+					chan->removeKey();
+					success = true;
+				}
+			break;
 
-            case 'o':
-                if (paramIndex >= params.size()) {
-                    client.enqueueOutput(":myserver 461 " + client.getNickname() + " MODE :Not enough parameters");
-                } else {
-                    success = setNewChanOperator(client, clients, currentMode, params[paramIndex], chan);
-                    if (success)
-                        modeParams += " " + params[paramIndex];
-                    ++paramIndex;
-                }
-                break;
+			case 'o':
+				if (paramIndex >= params.size()) {
+					client.enqueueOutput(":myserver 461 " + client.getNickname() + " MODE :Not enough parameters");
+				} else {
+					success = setNewChanOperator(client, clients, params[paramIndex], chan);
+					if (success)
+						modeParams += " " + params[paramIndex];
+					++paramIndex;
+				}
+				break;
 
-            case 'l':
-                if (currentMode.adding) {
-                    if (paramIndex >= params.size()) {
-                        client.enqueueOutput(":myserver 461 " + client.getNickname() + " MODE :Not enough parameters");
-                    } else {
-                        success = setChanNewUserLimit(client, params[paramIndex], chan);
-                        if (success)
-                            modeParams += " " + params[paramIndex];
-                        ++paramIndex;
-                    }
-                } else {
-                    chan->removeUserLimit();
-                    success = true;
-                }
-                break;
-        }
-
-        if (success) {
-            modeStr += (currentMode.adding ? "+" : "-");
-            modeStr += currentMode.mode;
-        }
-    }
-    if (!modeStr.empty()) {
-        chan->broadcastMsg(client.getNormalizedRfcNickname(),
-            client.getPrefix() + " MODE " + chan->getChanName() + " " + modeStr + modeParams);
-    }
+				case 'l':
+				if (currentMode.adding) {
+					if (paramIndex >= params.size()) {
+						client.enqueueOutput(":myserver 461 " + client.getNickname() + " MODE :Not enough parameters");
+					} else {
+						success = setChanNewUserLimit(client, params[paramIndex], chan);
+						if (success)
+							modeParams += " " + params[paramIndex];
+						++paramIndex;
+					}
+				} else {
+					chan->removeUserLimit();
+					success = true;
+				}
+				break;
+		}
+		if (success) {
+			modeStr += (currentMode.adding ? "+" : "-");
+			modeStr += currentMode.mode;
+		}
+	}
+	if (!modeStr.empty()) {
+		chan->broadcastMsg("", client.getPrefix() + " MODE " + chan->getChanName() + " " + modeStr + modeParams);
+	}
 }
 
 void CommandsProcessingStore::displayChannelParameters(std::string& channelName, Client& requester, std::map<std::string, Channel*> channels) {
@@ -721,27 +719,29 @@ void CommandsProcessingStore::displayChannelParameters(std::string& channelName,
 	}
 	Channel *chan = channels[normalizedChanName];
 
-    std::string modeStr = "+";
-    std::string modeParams;
+	std::string modeStr = "+";
+	std::string modeParams;
 
-    if (chan->isInviteOnly())
-        modeStr += "i";
-    if (chan->isTopicRestrict())
-        modeStr += "t";
-    if (chan->isKeyProtected()) {
-        modeStr += "k";
-        modeParams += " " + chan->getKey();
-    }
-    if (chan->hasUserLimit()) {
-        modeStr += "l";
-        std::ostringstream oss;
-        oss << chan->getUserLimit();
-        modeParams += " " + oss.str();
-    }
+	if (chan->isInviteOnly())
+		modeStr += "i";
+	if (chan->isTopicRestrict())
+		modeStr += "t";
+	if (chan->isKeyProtected()) {
+		modeStr += "k";
+		modeParams += " " + chan->getKey();
+	}
+	if (chan->hasUserLimit()) {
+		modeStr += "l";
+		std::ostringstream oss;
+		oss << chan->getUserLimit();
+		modeParams += " " + oss.str();
+	}
 
-    requester.enqueueOutput(":myserver 324 " + requester.getNickname() + " " + channelName + " " + modeStr + modeParams);
+	requester.enqueueOutput(":myserver 324 " + requester.getNickname() + " " + channelName + " " + modeStr + modeParams);
 
-    requester.enqueueOutput(":myserver 329 " + requester.getNickname() + " " + channelName + " " + std::to_string(chan->getCreationTime()));
+	std::ostringstream oss;
+	oss << chan->getCreationTime();
+	requester.enqueueOutput(":myserver 329 " + requester.getNickname() + " " + channelName + " " + oss.str());
 }
 
 void CommandsProcessingStore::commandMode(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels) {

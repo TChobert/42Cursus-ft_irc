@@ -68,6 +68,10 @@ bool Channel::hasUserLimit(void) const {
 	return (_userLimit != 0);
 }
 
+time_t Channel::getCreationTime(void) const {
+	return (_creationTime);
+}
+
 // SETTERS //
 
 void Channel::setChanName(const std::string& name) {
