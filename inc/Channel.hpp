@@ -20,6 +20,7 @@ class Channel {
 	bool _inviteOnly;
 	bool _topicRestrict;
 	long _userLimit;
+	std::time_t _creationTime;
 	std::time_t _topicTimestamp;
 
 	std::map<std::string, Client*> _members;

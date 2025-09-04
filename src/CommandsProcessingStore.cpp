@@ -600,7 +600,7 @@ std::vector<modeChange> CommandsProcessingStore::getModeFlags(const std::string&
 	return (modes);
 }
 
-bool CommandsProcessingStore::setNewChanKey(Client& requester, modeChange& currentMode, std::string& param, Channel *channel) {
+bool CommandsProcessingStore::setNewChanKey(Client& requester, std::string& param, Channel *channel) {
 
 	if (param.empty()) {
 		requester.enqueueOutput(":myserver 461 " + requester.getNickname() + " MODE :Not enough parameters");
@@ -610,7 +610,7 @@ bool CommandsProcessingStore::setNewChanKey(Client& requester, modeChange& curre
 	return (true);
 }
 
-bool CommandsProcessingStore::setNewChanOperator(Client& requester, std::map<int, Client>& clients, modeChange& mode, std::string& param, Channel *channel) {
+bool CommandsProcessingStore::setNewChanOperator(Client& requester, std::map<int, Client>& clients, std::string& param, Channel *channel) {
 
 	std::string targetNick = strToLowerRFC(param);
 
@@ -662,7 +662,7 @@ void CommandsProcessingStore::applyModeFlags(Client& client, std::map<int, Clien
                     if (paramIndex >= params.size()) {
                         client.enqueueOutput(":myserver 461 " + client.getNickname() + " MODE :Not enough parameters");
                     } else {
-                        success = setNewChanKey(client, currentMode, params[paramIndex], chan);
+                        success = setNewChanKey(client, params[paramIndex], chan);
                         if (success)
                             modeParams += " " + params[paramIndex];
                         ++paramIndex;

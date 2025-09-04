@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include <cerrno>
 
 #include "Client.hpp"
 #include "Channel.hpp"
@@ -40,8 +41,8 @@ class CommandsProcessingStore {
 	Client *getClientByName(const std::string& target, std::map<int, Client>& clients) const;
 	std::vector<modeChange> getModeFlags(const std::string& modesStr);
 	void applyModeFlags(Client& client, std::map<int, Client>& clients, std::vector<modeChange>& flags, std::vector<std::string>& params, Channel *chan, size_t& paramIndex);
-	bool setNewChanKey(Client& client, modeChange& mode, std::string& param, Channel *chan);
-	bool setNewChanOperator(Client& requester, std::map<int, Client>& clients, modeChange& mode, std::string& param, Channel *channel);
+	bool setNewChanKey(Client& client, std::string& param, Channel *chan);
+	bool setNewChanOperator(Client& requester, std::map<int, Client>& clients, std::string& param, Channel *channel);
 	bool setChanNewUserLimit(Client& client, std::string& param, Channel *channel);
 	void displayChannelParameters(std::string& channelName, Client& requester, std::map<std::string, Channel*> channels);
 

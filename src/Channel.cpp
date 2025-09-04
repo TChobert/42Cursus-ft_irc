@@ -1,6 +1,6 @@
 #include "Channel.hpp"
 
-Channel::Channel(std::string name) : _name(name), _topic(""), _key(""), _topicSetter(""), _inviteOnly(false), _topicRestrict(false), _userLimit(0), _topicTimestamp(0) {}
+Channel::Channel(std::string name) : _name(name), _topic(""), _key(""), _topicSetter(""), _inviteOnly(false), _topicRestrict(false), _userLimit(0), _creationTime(std::time(NULL)), _topicTimestamp(0) {}
 
 Channel::~Channel(void) {}
 
@@ -30,7 +30,7 @@ const std::string& Channel::getKey(void) const {
 	return (_key);
 }
 
-size_t Channel::getUserLimit(void) const {
+long Channel::getUserLimit(void) const {
 	return (_userLimit);
 }
 
