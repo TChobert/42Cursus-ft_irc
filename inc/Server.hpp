@@ -68,8 +68,6 @@ class Server {
 	void setClientSocketNonBlocking(int fd);
 	void addClientToInterestList(int clientFd);
 	void setClientID(const int clientFd);
-	void manageEpollInterests(void);
-	void updateEpollInterest(Client& client);
 	void disconnectClient(Client& client);
 	void handleClientDisconnection(int clientFd);
 	void disconnectClients(void);

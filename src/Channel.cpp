@@ -161,3 +161,11 @@ std::string Channel::getNormalizedChanName(void) {
 	}
 	return (name);
 }
+
+void Channel::setInviteOnly(bool mode) {
+	_inviteOnly = mode;
+}
+
+void Channel::setTopicRestrict(bool mode) {
+	_topicRestrict = mode;
+}

@@ -52,4 +52,6 @@ class Channel {
 	void addOperator(Client& newOp);
 	void setKey(const std::string& key);
 	bool checkKey(const std::string& key) const;
+	void setInviteOnly(bool mode);
+	void setTopicRestrict(bool mode);
 };

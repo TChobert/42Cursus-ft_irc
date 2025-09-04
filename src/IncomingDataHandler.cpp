@@ -72,6 +72,10 @@ commandParseStatus IncomingDataHandler::defineCommandType(Command& currentComman
 		currentCommand.setCommandType(CMD_TOPIC);
 		return (KNOWN_COMMAND);
 	}
+	else if (commandKey == "MODE") {
+		currentCommand.setCommandType(CMD_MODE);
+		return (KNOWN_COMMAND);
+	}
 	else {
 		currentCommand.setCommandType(CMD_UNKNOWN);
 		return (KNOWN_COMMAND);
@@ -102,8 +106,8 @@ commandParseStatus IncomingDataHandler::ensureCommandIsComplete(commandType type
 		case CMD_PRIVMSG:
 		case CMD_KICK:
 		case CMD_INVITE:
-	//	case CMD_TOPIC:
-	//	case CMD_MODE:
+		case CMD_TOPIC:
+		case CMD_MODE:
 			return UNCOMPLETE_COMMAND;
 		default:
 			return UNCOMPLETE_COMMAND;

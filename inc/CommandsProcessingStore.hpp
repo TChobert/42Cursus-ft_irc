@@ -7,6 +7,19 @@
 #include "Client.hpp"
 #include "Channel.hpp"
 
+enum channelMode {
+	MODE_I = 1 << 0,
+	MODE_T = 1 << 1,
+	MODE_K = 1 << 2,
+	MODE_O = 1 << 3,
+	MODE_L = 1 << 4
+};
+
+struct modeChange {
+	char mode;
+	bool adding;
+};
+
 class CommandsProcessingStore {
 
 	private:
@@ -33,6 +46,8 @@ class CommandsProcessingStore {
 	void handleSingleClientKicking(Command& command, Client& requester, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels);
 	void handleMultipleClientsKicking(std::vector<std::string>& params, Client& requester, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels);
 	Client *getClientByName(const std::string& target, std::map<int, Client>& clients) const;
+	std::vector<modeChange> getModeFlags(const std::string& modesStr);
+	void applyModeFlags(Client& client, std::vector<modeChange>& flags, std::vector<std::string>& params, Channel *chan);
 
 	public:
 
@@ -55,4 +70,5 @@ class CommandsProcessingStore {
 	void commandKick(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels);
 	void commandInvite(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels);
 	void commandTopic(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels);
+	void commandMode(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels);
 };

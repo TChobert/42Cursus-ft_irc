@@ -576,6 +576,107 @@ void CommandsProcessingStore::commandTopic(Command& command, Client& client, std
 	}
 }
 
+std::vector<modeChange> CommandsProcessingStore::getModeFlags(const std::string& modesStr) {
+
+	bool adding = false;
+	std::vector<modeChange> modes;
+
+	for (size_t i = 0; i < modesStr.size(); ++i) {
+
+		char c = modesStr[i];
+		if (c == '+') {
+			adding = true;
+			continue;
+		}
+		if (c == '-') { adding = false;
+			continue;
+		}
+
+		modeChange mode;
+		mode.mode = c;
+		mode.adding = adding;
+		modes.push_back(mode);
+	}
+	return (modes);
+}
+
+void CommandsProcessingStore::applyModeFlags(Client& client, std::vector<modeChange>& flags, std::vector<std::string>& params, Channel *chan) {
+
+	bool isThirdParam = params.size() == 3;
+
+	for (std::vector<modeChange>::iterator it = flags.begin(); it != flags.end(); ++it) {
+
+		modeChange currentMode = *it;
+		switch (currentMode.mode) {
+			case ('i') :
+				chan->setInviteOnly(currentMode.adding);
+				break ;
+			case ('t') :
+				chan->setTopicRestrict(currentMode.adding);
+				break ;
+			case 'k':
+				if (currentMode.adding) {
+					if (paramIndex >= params.size()) {
+						client.enqueueOutput(":myserver 461 " + client.getNickname() + " MODE :Not enough parameters");
+						break;
+					}
+					setNewChanKey(client, currentMode, params[paramIndex], chan);
+					++paramIndex;
+				} else {
+					chan->removeKey();
+				}
+				break;
+			case 'o':
+				if (paramIndex >= params.size()) {
+					client.enqueueOutput(":myserver 461 " + client.getNickname() + " MODE :Not enough parameters");
+					break;
+				}
+				setNewChanOperator(client, currentMode, params[paramIndex], chan);
+				++paramIndex;
+				break;
+			case 'l':
+				if (currentMode.adding) {
+					if (paramIndex >= params.size()) {
+						client.enqueueOutput(":myserver 461 " + client.getNickname() + " MODE :Not enough parameters");
+						break;
+					}
+				setChanNewUserLimit(client, currentMode, params[paramIndex], chan);
+				++paramIndex;
+				} else {
+					chan->removeUserLimit();
+				}
+				break;
+		}
+	}
+}
+
+void CommandsProcessingStore::commandMode(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels) {
+
+	std::vector<std::string> params = command.getParams();
+
+	if (params.size() == 1) {
+		(displayChannelParameters(params[0], client, clients, channels));
+		return ;
+	} else {
+		std::string chanName = strToLowerRFC(params[0]);
+		if (!checkChannelExistence(chanName, channels)) {
+			//enqueue message no such nick/channel
+			return ;
+		}
+		Channel *chan = channels[chanName];
+		if (!chan->isOperator(client.getNormalizedRfcNickname())) {
+			//message client pas operateur
+			return ;
+		}
+		if (params[1].empty() || (params[1][0] != '+' && params[1[0]] != '-')) {
+			//erreur
+			return ;
+		}
+		std::vector<modeChange>  modeFlags = getModeFlags(params[1]);
+		applyModeFlags(client, modeFlags, params, chan);
+	}
+}
+
 CommandsProcessingStore::CommandProcessPtr CommandsProcessingStore::getCommandProcess(Command& command) {
 
 	std::cout << "FUNCTION GET COMMAND PROCESS" << std::endl;
@@ -602,6 +703,8 @@ CommandsProcessingStore::CommandProcessPtr CommandsProcessingStore::getCommandPr
 			return (&CommandsProcessingStore::commandInvite);
 		case CMD_TOPIC:
 			return (&CommandsProcessingStore::commandTopic);
+		case CMD_MODE:
+			return (&CommandsProcessingStore::commandMode);
 		case CMD_UNKNOWN:
 			return (&CommandsProcessingStore::unknownCommand);
 	}
