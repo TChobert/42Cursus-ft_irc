@@ -600,9 +600,7 @@ std::vector<modeChange> CommandsProcessingStore::getModeFlags(const std::string&
 	return (modes);
 }
 
-void CommandsProcessingStore::applyModeFlags(Client& client, std::vector<modeChange>& flags, std::vector<std::string>& params, Channel *chan) {
-
-	bool isThirdParam = params.size() == 3;
+void CommandsProcessingStore::applyModeFlags(Client& client, std::vector<modeChange>& flags, std::vector<std::string>& params, Channel *chan, size_t& paramIndex) {
 
 	for (std::vector<modeChange>::iterator it = flags.begin(); it != flags.end(); ++it) {
 
@@ -665,15 +663,26 @@ void CommandsProcessingStore::commandMode(Command& command, Client& client, std:
 		}
 		Channel *chan = channels[chanName];
 		if (!chan->isOperator(client.getNormalizedRfcNickname())) {
-			//message client pas operateur
 			return ;
 		}
-		if (params[1].empty() || (params[1][0] != '+' && params[1[0]] != '-')) {
-			//erreur
+		if (params[1].empty() || (params[1][0] != '+' && params[1][0] != '-')) {
 			return ;
 		}
-		std::vector<modeChange>  modeFlags = getModeFlags(params[1]);
-		applyModeFlags(client, modeFlags, params, chan);
+		size_t paramIndex = 1;
+		while (paramIndex < params.size()) {
+			std::string arg = params[paramIndex];
+			if (arg.empty()) {
+				++paramIndex;
+				continue;
+			}
+			if (arg[0] == '+' || arg[0] == '-') {
+				std::vector<modeChange> modeFlags = getModeFlags(arg);
+				++paramIndex;
+				applyModeFlags(client, modeFlags, params, chan, paramIndex);
+			} else {
+				++paramIndex;
+			}
+		}
 	}
 }
 

@@ -7,14 +7,6 @@
 #include "Client.hpp"
 #include "Channel.hpp"
 
-enum channelMode {
-	MODE_I = 1 << 0,
-	MODE_T = 1 << 1,
-	MODE_K = 1 << 2,
-	MODE_O = 1 << 3,
-	MODE_L = 1 << 4
-};
-
 struct modeChange {
 	char mode;
 	bool adding;
@@ -47,7 +39,7 @@ class CommandsProcessingStore {
 	void handleMultipleClientsKicking(std::vector<std::string>& params, Client& requester, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels);
 	Client *getClientByName(const std::string& target, std::map<int, Client>& clients) const;
 	std::vector<modeChange> getModeFlags(const std::string& modesStr);
-	void applyModeFlags(Client& client, std::vector<modeChange>& flags, std::vector<std::string>& params, Channel *chan);
+	void applyModeFlags(Client& client, std::vector<modeChange>& flags, std::vector<std::string>& params, Channel *chan, size_t& paramIndex);
 
 	public:
 
