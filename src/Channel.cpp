@@ -64,6 +64,10 @@ bool Channel::checkKey(const std::string& key) const {
 	return (_key == key);
 }
 
+bool Channel::hasUserLimit(void) const {
+	return (_userLimit != 0);
+}
+
 // SETTERS //
 
 void Channel::setChanName(const std::string& name) {

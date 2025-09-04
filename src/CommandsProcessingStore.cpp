@@ -712,17 +712,49 @@ void CommandsProcessingStore::applyModeFlags(Client& client, std::map<int, Clien
     }
 }
 
+void CommandsProcessingStore::displayChannelParameters(std::string& channelName, Client& requester, std::map<std::string, Channel*> channels) {
+
+	std::string normalizedChanName = strToLowerRFC(channelName);
+	if (!checkChannelExistence(normalizedChanName, channels)) {
+		requester.enqueueOutput(":myserver 403 " + requester.getNickname() + " " + channelName + " :No such channel");
+		return ;
+	}
+	Channel *chan = channels[normalizedChanName];
+
+    std::string modeStr = "+";
+    std::string modeParams;
+
+    if (chan->isInviteOnly())
+        modeStr += "i";
+    if (chan->isTopicRestrict())
+        modeStr += "t";
+    if (chan->isKeyProtected()) {
+        modeStr += "k";
+        modeParams += " " + chan->getKey();
+    }
+    if (chan->hasUserLimit()) {
+        modeStr += "l";
+        std::ostringstream oss;
+        oss << chan->getUserLimit();
+        modeParams += " " + oss.str();
+    }
+
+    requester.enqueueOutput(":myserver 324 " + requester.getNickname() + " " + channelName + " " + modeStr + modeParams);
+
+    requester.enqueueOutput(":myserver 329 " + requester.getNickname() + " " + channelName + " " + std::to_string(chan->getCreationTime()));
+}
+
 void CommandsProcessingStore::commandMode(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels) {
 
 	std::vector<std::string> params = command.getParams();
 
 	if (params.size() == 1) {
-		(displayChannelParameters(params[0], client, clients, channels));
+		(displayChannelParameters(params[0], client, channels));
 		return ;
 	} else {
 		std::string chanName = strToLowerRFC(params[0]);
 		if (!checkChannelExistence(chanName, channels)) {
-			//enqueue message no such nick/channel
+			client.enqueueOutput(":myserver 403 " + client.getNickname() + " " + chanName + " :No such channel");
 			return ;
 		}
 		Channel *chan = channels[chanName];

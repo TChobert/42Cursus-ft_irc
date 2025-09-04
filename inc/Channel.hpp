@@ -19,7 +19,7 @@ class Channel {
 	std::string _topicSetter;
 	bool _inviteOnly;
 	bool _topicRestrict;
-	size_t _userLimit;
+	long _userLimit;
 	std::time_t _topicTimestamp;
 
 	std::map<std::string, Client*> _members;
@@ -36,11 +36,12 @@ class Channel {
 	bool isKeyProtected(void) const;
 	bool isTopicRestrict(void) const;
 	bool isEmpty(void) const;
-	size_t getUserLimit(void) const;
+	long getUserLimit(void) const;
 	const std::string& getChanName(void) const;
 	const std::string& getChanTopic(void) const;
 	std::string getMembersListForIRC(void) const;
 	const std::string& getKey(void) const;
+	bool hasUserLimit(void) const;
 
 	void addMember(Client* newMember);
 	void removeMember(Client& client);

@@ -43,6 +43,7 @@ class CommandsProcessingStore {
 	bool setNewChanKey(Client& client, modeChange& mode, std::string& param, Channel *chan);
 	bool setNewChanOperator(Client& requester, std::map<int, Client>& clients, modeChange& mode, std::string& param, Channel *channel);
 	bool setChanNewUserLimit(Client& client, std::string& param, Channel *channel);
+	void displayChannelParameters(std::string& channelName, Client& requester, std::map<std::string, Channel*> channels);
 
 	public:
 
