@@ -169,3 +169,15 @@ void Channel::setInviteOnly(bool mode) {
 void Channel::setTopicRestrict(bool mode) {
 	_topicRestrict = mode;
 }
+
+void Channel::removeKey(void) {
+	_key = std::string();
+}
+
+void Channel::removeUserLimit(void) {
+	_userLimit = 0;
+}
+
+void Channel::setUserLimit(long userLimit) {
+	_userLimit = userLimit;
+}

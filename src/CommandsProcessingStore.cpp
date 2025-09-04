@@ -600,52 +600,116 @@ std::vector<modeChange> CommandsProcessingStore::getModeFlags(const std::string&
 	return (modes);
 }
 
-void CommandsProcessingStore::applyModeFlags(Client& client, std::vector<modeChange>& flags, std::vector<std::string>& params, Channel *chan, size_t& paramIndex) {
+bool CommandsProcessingStore::setNewChanKey(Client& requester, modeChange& currentMode, std::string& param, Channel *channel) {
+
+	if (param.empty()) {
+		requester.enqueueOutput(":myserver 461 " + requester.getNickname() + " MODE :Not enough parameters");
+		return (false);
+	}
+	channel->setKey(param);
+	return (true);
+}
+
+bool CommandsProcessingStore::setNewChanOperator(Client& requester, std::map<int, Client>& clients, modeChange& mode, std::string& param, Channel *channel) {
+
+	std::string targetNick = strToLowerRFC(param);
+
+	if (!channel->isMember(targetNick)) {
+		requester.enqueueOutput(":myserver 441 " + requester.getNickname() + " " + param + " " + channel->getChanName() + " :They aren't on that channel");
+		return (false);
+	}
+	Client *newModo = getClientByName(targetNick, clients);
+	channel->addOperator(*newModo);
+	return (true);
+}
+
+bool CommandsProcessingStore::setChanNewUserLimit(Client& client, std::string& param, Channel *channel) {
+
+	char *endPtr;
+	errno = 0;
+
+	long userLimit = strtol(param.c_str(), &endPtr, 10);
+	if (errno == ERANGE || *endPtr != '\0' || userLimit <= 0) {
+		client.enqueueOutput(":myserver 461 " + client.getNickname() + " MODE :Invalid user limit");
+		return (false);
+	}
+	channel->setUserLimit(userLimit);
+	return (true);
+}
+
+void CommandsProcessingStore::applyModeFlags(Client& client, std::map<int, Client>& clients, std::vector<modeChange>& flags, std::vector<std::string>& params, Channel *chan, size_t& paramIndex)
+{
+	std::string modeStr;
+	std::string modeParams;
 
 	for (std::vector<modeChange>::iterator it = flags.begin(); it != flags.end(); ++it) {
-
 		modeChange currentMode = *it;
+		bool success = false;
+
 		switch (currentMode.mode) {
-			case ('i') :
-				chan->setInviteOnly(currentMode.adding);
-				break ;
-			case ('t') :
-				chan->setTopicRestrict(currentMode.adding);
-				break ;
-			case 'k':
-				if (currentMode.adding) {
-					if (paramIndex >= params.size()) {
-						client.enqueueOutput(":myserver 461 " + client.getNickname() + " MODE :Not enough parameters");
-						break;
-					}
-					setNewChanKey(client, currentMode, params[paramIndex], chan);
-					++paramIndex;
-				} else {
-					chan->removeKey();
-				}
-				break;
-			case 'o':
-				if (paramIndex >= params.size()) {
-					client.enqueueOutput(":myserver 461 " + client.getNickname() + " MODE :Not enough parameters");
-					break;
-				}
-				setNewChanOperator(client, currentMode, params[paramIndex], chan);
-				++paramIndex;
-				break;
-			case 'l':
-				if (currentMode.adding) {
-					if (paramIndex >= params.size()) {
-						client.enqueueOutput(":myserver 461 " + client.getNickname() + " MODE :Not enough parameters");
-						break;
-					}
-				setChanNewUserLimit(client, currentMode, params[paramIndex], chan);
-				++paramIndex;
-				} else {
-					chan->removeUserLimit();
-				}
-				break;
-		}
-	}
+            case 'i':
+                chan->setInviteOnly(currentMode.adding);
+                success = true;
+                break;
+
+            case 't':
+                chan->setTopicRestrict(currentMode.adding);
+                success = true;
+                break;
+
+            case 'k':
+                if (currentMode.adding) {
+                    if (paramIndex >= params.size()) {
+                        client.enqueueOutput(":myserver 461 " + client.getNickname() + " MODE :Not enough parameters");
+                    } else {
+                        success = setNewChanKey(client, currentMode, params[paramIndex], chan);
+                        if (success)
+                            modeParams += " " + params[paramIndex];
+                        ++paramIndex;
+                    }
+                } else {
+                    chan->removeKey();
+                    success = true;
+                }
+                break;
+
+            case 'o':
+                if (paramIndex >= params.size()) {
+                    client.enqueueOutput(":myserver 461 " + client.getNickname() + " MODE :Not enough parameters");
+                } else {
+                    success = setNewChanOperator(client, clients, currentMode, params[paramIndex], chan);
+                    if (success)
+                        modeParams += " " + params[paramIndex];
+                    ++paramIndex;
+                }
+                break;
+
+            case 'l':
+                if (currentMode.adding) {
+                    if (paramIndex >= params.size()) {
+                        client.enqueueOutput(":myserver 461 " + client.getNickname() + " MODE :Not enough parameters");
+                    } else {
+                        success = setChanNewUserLimit(client, params[paramIndex], chan);
+                        if (success)
+                            modeParams += " " + params[paramIndex];
+                        ++paramIndex;
+                    }
+                } else {
+                    chan->removeUserLimit();
+                    success = true;
+                }
+                break;
+        }
+
+        if (success) {
+            modeStr += (currentMode.adding ? "+" : "-");
+            modeStr += currentMode.mode;
+        }
+    }
+    if (!modeStr.empty()) {
+        chan->broadcastMsg(client.getNormalizedRfcNickname(),
+            client.getPrefix() + " MODE " + chan->getChanName() + " " + modeStr + modeParams);
+    }
 }
 
 void CommandsProcessingStore::commandMode(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels) {
@@ -678,7 +742,7 @@ void CommandsProcessingStore::commandMode(Command& command, Client& client, std:
 			if (arg[0] == '+' || arg[0] == '-') {
 				std::vector<modeChange> modeFlags = getModeFlags(arg);
 				++paramIndex;
-				applyModeFlags(client, modeFlags, params, chan, paramIndex);
+				applyModeFlags(client, clients, modeFlags, params, chan, paramIndex);
 			} else {
 				++paramIndex;
 			}

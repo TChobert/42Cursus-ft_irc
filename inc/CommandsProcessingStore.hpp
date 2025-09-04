@@ -39,7 +39,10 @@ class CommandsProcessingStore {
 	void handleMultipleClientsKicking(std::vector<std::string>& params, Client& requester, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels);
 	Client *getClientByName(const std::string& target, std::map<int, Client>& clients) const;
 	std::vector<modeChange> getModeFlags(const std::string& modesStr);
-	void applyModeFlags(Client& client, std::vector<modeChange>& flags, std::vector<std::string>& params, Channel *chan, size_t& paramIndex);
+	void applyModeFlags(Client& client, std::map<int, Client>& clients, std::vector<modeChange>& flags, std::vector<std::string>& params, Channel *chan, size_t& paramIndex);
+	bool setNewChanKey(Client& client, modeChange& mode, std::string& param, Channel *chan);
+	bool setNewChanOperator(Client& requester, std::map<int, Client>& clients, modeChange& mode, std::string& param, Channel *channel);
+	bool setChanNewUserLimit(Client& client, std::string& param, Channel *channel);
 
 	public:
 

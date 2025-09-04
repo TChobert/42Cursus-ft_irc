@@ -54,4 +54,7 @@ class Channel {
 	bool checkKey(const std::string& key) const;
 	void setInviteOnly(bool mode);
 	void setTopicRestrict(bool mode);
+	void setUserLimit(long userLimit);
+	void removeKey(void);
+	void removeUserLimit(void);
 };
