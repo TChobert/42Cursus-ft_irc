@@ -60,6 +60,7 @@ commandParseStatus IncomingDataHandler::defineCommandType(Command& currentComman
 		currentCommand.setCommandType(CMD_KICK);
 		return (KNOWN_COMMAND);
 	}
+
 	else if (commandKey == "QUIT") {
 		currentCommand.setCommandType(CMD_QUIT);
 		return (KNOWN_COMMAND);
@@ -76,6 +77,7 @@ commandParseStatus IncomingDataHandler::defineCommandType(Command& currentComman
 		currentCommand.setCommandType(CMD_MODE);
 		return (KNOWN_COMMAND);
 	}
+
 	else {
 		currentCommand.setCommandType(CMD_UNKNOWN);
 		return (KNOWN_COMMAND);

@@ -291,6 +291,20 @@ void Server::handleMessagesToSend(void) {
 	}
 }
 
+void Server::disconnectClients(void) {
+
+	std::vector<int> toDisconnect;
+
+	for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); ++it) {
+		if (it->second.getDisconnectionStatus()) {
+			toDisconnect.push_back(it->first);
+		}
+	}
+	for (size_t i = 0; i < toDisconnect.size(); ++i) {
+		disconnectClient(_clients.at(toDisconnect[i]));
+	}
+}
+
 void Server::run(void) {
 
 	while (gSignalStatus == 0) {

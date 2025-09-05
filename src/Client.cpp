@@ -115,9 +115,9 @@ void Client::setRegistered(bool reg) {
 	_isRegistered =  reg;
 }
 
+
 void Client::setDisconnectionStatus(void) {
 	_disconnectionPending = true;
-}
 
 void Client::appendInput(const char *input, const size_t len) {
 	_inputBuffer.append(input, len);
@@ -147,3 +147,4 @@ void Client::setQuitMessage(std::string& quitMessage) {
 void Client::setEpollReset(bool status) {
 	_needEpollReset = status;
 }
+

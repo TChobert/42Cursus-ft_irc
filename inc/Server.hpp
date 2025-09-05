@@ -75,5 +75,6 @@ class Server {
 	void deleteAllChannels(void);
 	void deleteAllNetwork(void);
 
+
 	int getServerSocket(void) const;
 };

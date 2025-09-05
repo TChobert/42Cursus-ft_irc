@@ -64,6 +64,7 @@ class Client {
 	void setRealname(const std::string& realname);
 	void setHostname(const std::string& hostname);
 	void setRegistered(bool reg);
+	void setDisconnectionStatus(bool status);
 	void appendInput(const char *input, const size_t len);
 	void enqueueOutput(const std::string& output);
 	void flushInputBuffer(void);
