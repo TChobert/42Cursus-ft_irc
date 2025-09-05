@@ -89,6 +89,10 @@ bool Client::getDisconnectionStatus(void) const {
 	return (_disconnectionPending);
 }
 
+bool Client::isInvitedTo(const std::string& chanName) const {
+	return std::find(_invitedTo.begin(), _invitedTo.end(), chanName) != _invitedTo.end();
+}
+
 ///// SETTERS /////
 
 void Client::setResponsePending(bool mode) {
@@ -146,4 +150,8 @@ void Client::setQuitMessage(std::string& quitMessage) {
 
 void Client::setEpollReset(bool status) {
 	_needEpollReset = status;
+}
+
+void Client::setInvitationTo(std::string chanName) {
+	_invitedTo.push_back(chanName);
 }

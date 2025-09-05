@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <unistd.h>
+#include <algorithm>
 
 #include "authFlags.hpp"
 #include "Command.hpp"
@@ -22,6 +23,7 @@ class Client {
 	std::string _inputBuffer;
 	std::string _outputBuffer;
 	std::vector<Command> _commands;
+	std::vector<std::string> _invitedTo;
 
 	bool _isRegistered;
 	bool _isResponsePending;
@@ -57,6 +59,7 @@ class Client {
 	bool isCrlfInInput(void) const;
 	bool getDisconnectionStatus(void) const;
 	bool getEpollReset(void) const;
+	bool isInvitedTo(const std::string& chanName) const;
 
 	void setResponsePending(bool mode);
 	void setNickname(const std::string& nick);
@@ -72,8 +75,5 @@ class Client {
 	void setDisconnectionStatus(void);
 	void setQuitMessage(std::string& message);
 	void setEpollReset(bool status);
-
-	// void joinChannel(const std::string& channel);
-	// void leaveChannel(const std::string& channel);
-	// bool isInChannel(const std::string& channel) const;
+	void setInvitationTo(std::string chanName);
 };

@@ -381,6 +381,12 @@ void CommandsProcessingStore::channelsJoinAttempt(Client& client, std::vector<st
 					continue ;
 				}
 			}
+			if (chan->isInviteOnly()) {
+				if (!client.isInvitedTo(chan->getNormalizedChanName())) {
+					client.enqueueOutput(":myserver 473 " + client.getNickname() + " " + *it + " :Cannot join channel (+i)");
+					continue ;
+				}
+			}
 			chan->addMember(&client);
 			std::string joinNotice = ":myserver NOTICE " + client.getNickname() + " :Welcome to " + chan->getChanName() + "!";
 			client.enqueueOutput(joinNotice);
@@ -549,6 +555,7 @@ void CommandsProcessingStore::commandInvite(Command& command, Client& requester,
 		requester.enqueueOutput(":myserver 482 " + requester.getNickname() + " " + params[1] + " :You're not channel operator");
 		return ;
 	}
+	guest->setInvitationTo(chan->getNormalizedChanName());
 	requester.enqueueOutput(":myserver 341 " + requester.getNickname() + " " + guest->getNickname() + " " + params[1]);
 	guest->enqueueOutput(requester.getPrefix() + " INVITE " + guest->getNickname() + " :" + params[1]);
 }
