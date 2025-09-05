@@ -27,7 +27,7 @@ void ProgramInputParser::getPort(std::string port, serverLaunchInfo& info) {
 	long portValue = std::strtol(port.c_str(), &endPtr, 10);
 	if (*endPtr != '\0') {
 		throw InvalidPortException();
-	} else if (portValue < 0 || portValue > 65535) {
+	} else if (portValue < 1024 || portValue > 65535) {
 		throw InvalidPortException();
 	}
 	info.port = static_cast<uint16_t>(portValue);
@@ -42,7 +42,7 @@ void ProgramInputParser::parse(std::string port, std::string pswd, serverLaunchI
 // EXCEPTIONS //
 
 const char *ProgramInputParser::InvalidPortException::what() const throw() {
-	return "Invalid port. Must be a valid number between 0 and 65535";
+	return "Invalid port. Must be an integer between 1024 and 65535";
 }
 
 const char *ProgramInputParser::InvalidPswdException::what() const throw() {

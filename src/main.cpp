@@ -28,7 +28,9 @@ int main(int ac, char **av) {
 		server.initServer();
 	}
 	catch (const std::exception& e) {
-		std::cerr << e.what() << std::endl;
+		std::cerr << RED << "Error while initializing IRC server:" << e.what() << RESET <<std::endl;
+		int socket = server.getServerSocket();
+		close(socket);
 		return (EXIT_FAILURE);
 	}
 	try {

@@ -339,6 +339,14 @@ void CommandsProcessingStore::channelsAndKeysJoinAttempt(Client& client, std::ve
 					continue ;
 				}
 			}
+			if (chan->hasUserLimit()) {
+				long userLimit = chan->getUserLimit();
+				long chanMembNumber = chan->getMembersNumber();
+				if ((chanMembNumber + 1) > userLimit) {
+					client.enqueueOutput(":myserver 471 " + client.getNickname() + " " + *it + " :Cannot join channel (+l)");
+					continue ;
+				}
+			}
 			chan->addMember(&client);
 			std::string joinNotice = ":myserver NOTICE " + client.getNickname() + " :Welcome to " + chan->getChanName() + "!";
 			client.enqueueOutput(joinNotice);
@@ -364,6 +372,14 @@ void CommandsProcessingStore::channelsJoinAttempt(Client& client, std::vector<st
 			if (chan->isKeyProtected()) {
 				client.enqueueOutput(":myserver 475 " + client.getNickname() + " " + *it + " :Cannot join channel (+k)");
 				continue;
+			}
+			if (chan->hasUserLimit()) {
+				long userLimit = chan->getUserLimit();
+				long chanMembNumber = chan->getMembersNumber();
+				if ((chanMembNumber + 1) > userLimit) {
+					client.enqueueOutput(":myserver 471 " + client.getNickname() + " " + *it + " :Cannot join channel (+l)");
+					continue ;
+				}
 			}
 			chan->addMember(&client);
 			std::string joinNotice = ":myserver NOTICE " + client.getNickname() + " :Welcome to " + chan->getChanName() + "!";

@@ -44,6 +44,7 @@ class Channel {
 	const std::string& getKey(void) const;
 	bool hasUserLimit(void) const;
 	time_t getCreationTime(void) const;
+	long getMembersNumber(void) const;
 
 	void addMember(Client* newMember);
 	void removeMember(Client& client);

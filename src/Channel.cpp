@@ -72,6 +72,10 @@ time_t Channel::getCreationTime(void) const {
 	return (_creationTime);
 }
 
+long Channel::getMembersNumber(void) const {
+	return (static_cast<long>(_members.size()));
+}
+
 // SETTERS //
 
 void Channel::setChanName(const std::string& name) {

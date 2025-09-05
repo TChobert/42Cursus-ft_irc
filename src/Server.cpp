@@ -226,14 +226,8 @@ void Server::initServer(void) {
 	_epollFd = epoll_create1(0);
 
 	if (_serverSocket >= 0 && _epollFd >= 0) {
-		try {
-			socketInitProcess();
-			std::cout << YELLOW << "[SERVER] <::> is ready to communicate!" << RESET << std::endl;
-		}
-		catch (const std::exception& e) {
-			close(_serverSocket);
-			std::cerr << RED << "Error while initializing IRC server:" << e.what() << RESET <<std::endl;
-		}
+		socketInitProcess();
+		std::cout << YELLOW << "[SERVER] <::> is ready to communicate!" << RESET << std::endl;
 	} else {
 			std::cerr << RED << "Failed to initialize IRC server socket. EXIT" << RESET << std::endl;
 	}
