@@ -739,6 +739,11 @@ void CommandsProcessingStore::displayChannelParameters(std::string& channelName,
 	}
 	Channel *chan = channels[normalizedChanName];
 
+	if (!chan->isMember(requester.getNormalizedRfcNickname())) {
+		requester.enqueueOutput(":myserver 442 " + requester.getNickname() + " " + channelName + " :You're not on that channel");
+		return ;
+	}
+
 	std::string modeStr = "+";
 	std::string modeParams;
 
@@ -778,6 +783,10 @@ void CommandsProcessingStore::commandMode(Command& command, Client& client, std:
 			return ;
 		}
 		Channel *chan = channels[chanName];
+		if (!chan->isMember(client.getNormalizedRfcNickname())) {
+			client.enqueueOutput(":myserver 442 " + client.getNickname() + " " + chanName + " :You're not on that channel");
+			return ;
+		}
 		if (!chan->isOperator(client.getNormalizedRfcNickname())) {
 			client.enqueueOutput(":myserver 482 " + client.getNickname() + " " + chanName + " :You're not channel operator");
 			return ;
