@@ -43,13 +43,13 @@ void Server::disconnectClient(Client &client) {
 
 	int clientFd = client.getFd();
 
-	std::cout << RED << client.getPrefix() << " is now disconnected from [SERVER]" << RESET << std::endl;
+	std::cout << BRIGHT_GREEN << client.getPrefix() << BRIGHT_RED << ": is now disconnected from [" << BRIGHT_YELLOW << "My Server" << BRIGHT_RED << "]" << RESET << std::endl;
 	 if (epoll_ctl(_epollFd, EPOLL_CTL_DEL, clientFd, NULL) < 0) {
 		perror("epoll_ctl DEL");
 	}
 	for (std::map<std::string, Channel*>::iterator it = _channels.begin(); it != _channels.end(); ) {
 		if (it->second->isMember(client.getNormalizedRfcNickname())) {
-			//it->second->broadcastQuit(client.getQuitMessage());
+			it->second->broadcastQuit(client.getQuitMessage());
 			it->second->removeMember(client);
 		}
 		if (it->second->isEmpty()) {
@@ -132,7 +132,7 @@ void	Server::handleNewClient(void) {
 		if (clientFd != -1) {
 			setClientID(clientFd);
 			addClientToInterestList(clientFd);
-			std::cout << GREEN << "[client] =" << "= " << clientFd << " ==> is now connected with [SERVER]" RESET << std::endl;
+			std::cout << BRIGHT_GREEN << "[client: " << BRIGHT_BLUE  << clientFd << BRIGHT_GREEN << "] ==> is now connected with [" << BRIGHT_YELLOW <<  "My Server" << BRIGHT_GREEN << "]" << RESET << std::endl;
 		}
 	}
 	catch (const std::exception& e) {
@@ -227,7 +227,7 @@ void Server::initServer(void) {
 
 	if (_serverSocket >= 0 && _epollFd >= 0) {
 		socketInitProcess();
-		std::cout << YELLOW << "[SERVER] <::> is ready to communicate!" << RESET << std::endl;
+		std::cout << BRIGHT_YELLOW << ITALIC << BOLD << "[MY SERVER V.1 -08/09 2025] <::> is ready to communicate!" << RESET << std::endl;
 	} else {
 			std::cerr << RED << "Failed to initialize IRC server socket. EXIT" << RESET << std::endl;
 	}

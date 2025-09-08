@@ -507,7 +507,7 @@ void CommandsProcessingStore::commandKick(Command& command, Client& client, std:
 	std::vector<std::string> params = command.getParams();
 
 	if (params.empty() || params.size() > 2) {
-		//message pas assez d'arguments (ou trop ??)
+		client.enqueueOutput(":myserver 461 " + client.getNickname() + " KICK :Not enough parameters");
 		return ;
 	}
 	if (!checkChannelExistence(params[0], channels)) {

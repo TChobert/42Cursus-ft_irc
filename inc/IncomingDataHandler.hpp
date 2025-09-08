@@ -55,4 +55,3 @@ class IncomingDataHandler {
 
 	ExecutionStatus receiveDataFromClient(Client& client);
 };
-

@@ -38,15 +38,18 @@ const std::string& Command::getTrailing(void) const {
 
 void Command::printCommand(void) const {
 
-	std::cout << BLUE;
+	std::cout << GREEN;
 	std::cout << "==> COMMAND ==>" << std::endl;
-	std::cout << "Command PREFIX: " << getPrefix() << std::endl;
 	std::cout << "Command type: " << getCommand() << std::endl;
-	std::cout << "Command PARAMS: " << std::endl;
+	std::cout << "Command parameters: " << std::endl;
 	for (size_t i = 0; i < _params.size(); ++ i) {
 		std::cout << _params[i] << std::endl;
 	}
-	std::cout << "COMMAND TRAILING: " << getTrailing() << std::endl;
+	std::string trailing = getTrailing();
+	if (trailing.empty()) {
+		std::cout << "Command trailing: none" << std::endl;
+	}
+	std::cout << "Command trailing: " << getTrailing() << std::endl;
 	std::cout << RESET;
 }
 
