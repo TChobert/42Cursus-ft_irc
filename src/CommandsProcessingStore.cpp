@@ -112,7 +112,6 @@ void CommandsProcessingStore::commandPass(Command& command, Client& client, std:
 	(void)clients;
 	(void)channels;
 
-	std::cout << "Command PASS" <<std::endl;
 	if (client.authProcessStatus._passValidated == true) {
 		 client.enqueueOutput(":myserver 462 * :You may not reregister");
 		return ;
@@ -821,7 +820,6 @@ void CommandsProcessingStore::commandMode(Command& command, Client& client, std:
 
 CommandsProcessingStore::CommandProcessPtr CommandsProcessingStore::getCommandProcess(Command& command) {
 
-	std::cout << "FUNCTION GET COMMAND PROCESS" << std::endl;
 	switch(command.getCommandType()) {
 		case CMD_CAP:
 			return (&CommandsProcessingStore::commandCap);

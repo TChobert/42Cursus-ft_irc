@@ -102,7 +102,7 @@ void Channel::addMember(Client* newMember) {
 	_members.insert(std::make_pair(newMember->getNormalizedRfcNickname(), newMember));
 
 	std::string joinMsg = ":" + newMember->getPrefix() + " JOIN " + _name;
-	broadcastMsg(newMember->getNormalizedRfcNickname(), joinMsg);
+	broadcastMsg("", joinMsg);
 
 	std::ostringstream oss;
 	oss << _topicTimestamp;

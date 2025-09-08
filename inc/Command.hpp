@@ -40,7 +40,6 @@ class Command {
 
 	public:
 
-		static std::map<std::string, commandType> _typesDictionary;
 		Command(void);
 		Command(commandType type, const std::string& command);
 		~Command(void);
@@ -57,7 +56,6 @@ class Command {
 
 	// SETTERS
 
-	void initTypesDicitonary(void);
 	void setCommandType(commandType type);
 	void setPrefix(const std::string& prefix);
 	void setCommand(const std::string& cmd);

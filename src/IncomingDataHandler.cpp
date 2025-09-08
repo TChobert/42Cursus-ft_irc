@@ -78,20 +78,9 @@ commandParseStatus IncomingDataHandler::defineCommandType(Command& currentComman
 	}
 	else {
 		currentCommand.setCommandType(CMD_UNKNOWN);
-		return (KNOWN_COMMAND);
+		return (UNKNOWN_COMMAND);
 	}
 }
-
-// commandParseStatus IncomingDataHandler::defineCommandType(Command& currentCommand, const std::string& commandKey) {
-
-// 	if (currentCommand._typesDictionary.count(commandKey)) {
-// 		currentCommand.setCommandType(currentCommand._typesDictionary[commandKey]);
-// 	} else {
-// 		currentCommand.setCommandType(CMD_UNKNOWN);
-// 		return (UNKNOWN_COMMAND);
-// 	}
-// 	return (KNOWN_COMMAND);
-// }
 
 commandParseStatus IncomingDataHandler::ensureCommandIsComplete(commandType type) {
 
@@ -133,16 +122,6 @@ void IncomingDataHandler::getCommand(std::string& line, Command& currentCommand,
 	currentCommand.setCommand(commandKey);
 	index += commandKey.size();
 }
-
-// void IncomingDataHandler::splitAndAddParams(std::string params, Command& currentCommand) {
-
-// 	std::stringstream ss(params);
-// 	std::string currentParam;
-
-// 	while (ss >> currentParam) {
-// 		currentCommand.addParam(currentParam);
-// 	}
-// }
 
 void IncomingDataHandler::splitAndAddParams(std::string params, Command& currentCommand) {
 
@@ -214,6 +193,16 @@ void IncomingDataHandler::saveCurrentCommand(Client& client, Command& command, c
 	}
 }
 
+void IncomingDataHandler::printReceivedData(const std::string& rawLine) const {
+
+	std::cout << "RAW LINE: [" << rawLine << "] length: " << rawLine.length() << std::endl;
+	for (size_t i = 0; i < rawLine.length(); i++) {
+		std::cout << YELLOW << "line[" << i << "] = '" << rawLine[i] << "' (ASCII: " << (int)rawLine[i] << ")" << RESET;
+		if (i == (rawLine.length() - 1))
+			std::cout << std::endl;
+	}
+}
+
 void IncomingDataHandler::parseCommands(Client& client) {
 
 	std::string& buffer = client.getInputBuffer();
@@ -224,11 +213,7 @@ void IncomingDataHandler::parseCommands(Client& client) {
 		commandParseStatus status = IN_PROGRESS;
 
 		std::string line = buffer.substr(0, pos);
-		 std::cout << "RAW LINE: [" << line << "] length: " << line.length() << std::endl;
-		for (size_t i = 0; i < line.length(); i++) {
-			std::cout << YELLOW << "line[" << i << "] = '" << line[i] << "' (ASCII: " << (int)line[i] << ")" << RESET;
-			std::cout << std::endl;
-		}
+		//printReceivedData(line);
 		buffer.erase(0, pos + 2);
  		if (line.empty())
 			continue;
@@ -245,7 +230,6 @@ readStatus IncomingDataHandler::readIncomingData(Client& client) {
 
 	char readContent[1024];
 
-	std::cout << "FUNCTION READ INCOMING DATA" << std::endl;
 	ssize_t bytesRead = recv(client.getFd(), readContent, sizeof(readContent), 0);
 	if (bytesRead > 0) {
 		client.appendInput(readContent, bytesRead);
@@ -268,7 +252,6 @@ readStatus IncomingDataHandler::readIncomingData(Client& client) {
 
 ExecutionStatus IncomingDataHandler::receiveDataFromClient(Client& client) {
 
-	std::cout << "FUNCTION HANDLE INCOMING DATA" << std::endl;
 	readStatus status = readIncomingData(client);
 
 	switch (status) {

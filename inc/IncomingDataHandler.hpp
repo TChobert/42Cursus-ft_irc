@@ -46,6 +46,7 @@ class IncomingDataHandler {
 	void addCommandToList(Client& client, Command& command);
 	void trimSpaces(std::string& str);
 	void splitAndAddParams(std::string params, Command& currentCommand);
+	void printReceivedData(const std::string& rawLine) const;
 
 	public:
 

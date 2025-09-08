@@ -1,12 +1,8 @@
 #include "Command.hpp"
 
-std::map<std::string, commandType> Command::_typesDictionary;
-
 Command::Command(void) {}
 
-Command::Command(commandType type, const std::string& command) : _type(type), _command(command) {
-	initTypesDicitonary();
-}
+Command::Command(commandType type, const std::string& command) : _type(type), _command(command) {}
 
 Command::~Command(void) {}
 
@@ -55,19 +51,6 @@ void Command::printCommand(void) const {
 }
 
 // SETTERS
-
-void Command::initTypesDicitonary(void) {
-	_typesDictionary["PASS"] = CMD_PASS;
-	_typesDictionary["NICK"] = CMD_NICK;
-	_typesDictionary["USER"] = CMD_USER;
-	//_typesDictionary["JOIN"] = CMD_JOIN;
-	_typesDictionary["PRIVMSG"] = CMD_PRIVMSG;
-	//_typesDictionary["KICK"] = CMD_KICK;
-	//_typesDictionary["INVITE"] = CMD_INVITE;
-//	_typesDictionary["TOPIC"] = CMD_TOPIC;
-	//_typesDictionary["MODE"] = CMD_MODE;
-	//_typesDictionary["QUIT"] = CMD_QUIT;
-}
 
 void Command::setCommandType(commandType type) {
 	_type = type;
