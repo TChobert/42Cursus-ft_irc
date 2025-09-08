@@ -4,6 +4,8 @@
 #include <vector>
 #include <iostream>
 #include <map>
+#include <iomanip>
+#include <sstream>
 
 #include "Client.hpp"
 #include "CommandsProcessingStore.hpp"
@@ -15,6 +17,8 @@ class CommandsExecutor {
 	std::string _serverPswd;
 	CommandsProcessingStore _commandsProcesses;
 	void executeCurrentCommand(Client& client, Command& currentCommand, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels);
+	std::string commandTypeToString(const commandType& type) const;
+	void displayCommand(Client& client, Command& currentCommand) const;
 
 	public:
 

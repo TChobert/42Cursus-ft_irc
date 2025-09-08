@@ -94,6 +94,10 @@ void CommandsProcessingStore::commandPing(Command& command, Client& client, std:
 
 	(void)clients;
 	(void)channels;
+	if (!client.isRegistered()) {
+		client.enqueueOutput(":myserver 451 " + (client.getNickname().empty() ? std::string("*") : client.getNickname()) + " " + command.getCommand() + " :You have not registered");
+		return ;
+	}
 	std::string token;
 	if (!command.getParams().empty())
 		token = command.getParams()[0];
@@ -411,6 +415,10 @@ void CommandsProcessingStore::joinChannels(std::vector<std::string> channelsAndK
 
 void CommandsProcessingStore::commandJoin(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels) {
 
+	if (!client.isRegistered()) {
+		client.enqueueOutput(":myserver 451 " + (client.getNickname().empty() ? std::string("*") : client.getNickname()) + " " + command.getCommand() + " :You have not registered");
+		return ;
+	}
 	(void)clients;
 	std::vector<std::string> params = command.getParams();
 	if (params.empty() || params.size() > 2) {
@@ -505,6 +513,11 @@ void CommandsProcessingStore::handleMultipleClientsKicking(std::vector<std::stri
 
 void CommandsProcessingStore::commandKick(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels) {
 
+	if (!client.isRegistered()) {
+		client.enqueueOutput(":myserver 451 " + (client.getNickname().empty() ? std::string("*") : client.getNickname()) + " " + command.getCommand() + " :You have not registered");
+		return ;
+	}
+
 	std::vector<std::string> params = command.getParams();
 
 	if (params.empty() || params.size() > 2) {
@@ -523,6 +536,11 @@ void CommandsProcessingStore::commandKick(Command& command, Client& client, std:
 }
 
 void CommandsProcessingStore::commandInvite(Command& command, Client& requester, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels) {
+
+	if (!requester.isRegistered()) {
+		requester.enqueueOutput(":myserver 451 " + (requester.getNickname().empty() ? std::string("*") : requester.getNickname()) + " " + command.getCommand() + " :You have not registered");
+		return ;
+	}
 
 	std::vector<std::string> params = command.getParams();
 
@@ -563,6 +581,11 @@ void CommandsProcessingStore::commandInvite(Command& command, Client& requester,
 void CommandsProcessingStore::commandTopic(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels) {
 
 	(void)clients;
+	if (!client.isRegistered()) {
+		client.enqueueOutput(":myserver 451 " + (client.getNickname().empty() ? std::string("*") : client.getNickname()) + " " + command.getCommand() + " :You have not registered");
+		return ;
+	}
+
 	std::vector<std::string> params = command.getParams();
 
 	if (params.empty()) {
@@ -778,6 +801,11 @@ void CommandsProcessingStore::displayChannelParameters(std::string& channelName,
 
 void CommandsProcessingStore::commandMode(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels) {
 
+	if (!client.isRegistered()) {
+		client.enqueueOutput(":myserver 451 " + (client.getNickname().empty() ? std::string("*") : client.getNickname()) + " " + command.getCommand() + " :You have not registered");
+		return ;
+	}
+
 	std::vector<std::string> params = command.getParams();
 
 	if (params.size() == 1) {
@@ -881,9 +909,35 @@ void CommandsProcessingStore::commandMyServer(Command& command, Client& client, 
 
 	(void)command;
 	(void)channels;
+	if (!client.isRegistered()) {
+		client.enqueueOutput(":myserver 451 " + (client.getNickname().empty() ? std::string("*") : client.getNickname()) + " " + command.getCommand() + " :You have not registered");
+		return ;
+	}
+
 	std::cout << BRIGHT_MAGENTA << ITALIC << "My Server information required by: " << BRIGHT_YELLOW << client.getNickname() << RESET <<std::endl;
 	printClients(clients);
 	printChannels(channels);
+}
+
+void CommandsProcessingStore::commandDisplayCommands(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels) {
+
+	(void)command;
+	(void)clients;
+	(void)channels;
+	if (!client.isRegistered()) {
+		client.enqueueOutput(":myserver 451 " + (client.getNickname().empty() ? std::string("*") : client.getNickname()) + " " + command.getCommand() + " :You have not registered");
+		return ;
+	}
+
+	bool display = client.getCommandsDisplaying();
+
+	if (!display) {
+		client.setCommandsDisplaying(true);
+		std::cout << BRIGHT_YELLOW << "Commands displaying required by: " << BRIGHT_BLUE << client.getFd() << RESET << std::endl;
+	} else {
+		client.setCommandsDisplaying(false);
+		std::cout << BRIGHT_YELLOW << "Commands displaying desactivated by: " << BRIGHT_BLUE << client.getFd() << RESET << std::endl;
+	}
 }
 
 CommandsProcessingStore::CommandProcessPtr CommandsProcessingStore::getCommandProcess(Command& command) {
@@ -915,6 +969,8 @@ CommandsProcessingStore::CommandProcessPtr CommandsProcessingStore::getCommandPr
 			return (&CommandsProcessingStore::commandMode);
 		case CMD_MYSERVER:
 			return (&CommandsProcessingStore::commandMyServer);
+		case CMD_DISPLAYCMDS:
+			return (&CommandsProcessingStore::commandDisplayCommands);
 		case CMD_UNKNOWN:
 			return (&CommandsProcessingStore::unknownCommand);
 	}

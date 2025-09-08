@@ -43,6 +43,7 @@ enum commandType {
 	CMD_TOPIC,
 	CMD_MODE,
 	CMD_MYSERVER,
+	CMD_DISPLAYCMDS,
 	CMD_QUIT
 };
 

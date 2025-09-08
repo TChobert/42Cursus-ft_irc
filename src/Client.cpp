@@ -1,6 +1,6 @@
 #include "Client.hpp"
 
-Client::Client(int fd) : _fd(fd), _isRegistered(false), _isResponsePending(false), _needEpollReset(false), _disconnectionPending(false), _nickname("*"), _hostname("localhost") {}
+Client::Client(int fd) : _fd(fd), _isRegistered(false), _isResponsePending(false), _needEpollReset(false), _disconnectionPending(false), _commandsDisplaying(false), _nickname("*"), _hostname("localhost") {}
 
 Client::~Client(void) {} // TO COMPLETE
 
@@ -93,6 +93,10 @@ bool Client::isInvitedTo(const std::string& chanName) const {
 	return std::find(_invitedTo.begin(), _invitedTo.end(), chanName) != _invitedTo.end();
 }
 
+bool Client::getCommandsDisplaying(void) const {
+	return (_commandsDisplaying);
+}
+
 ///// SETTERS /////
 
 void Client::setResponsePending(bool mode) {
@@ -154,4 +158,8 @@ void Client::setEpollReset(bool status) {
 
 void Client::setInvitationTo(std::string chanName) {
 	_invitedTo.push_back(chanName);
+}
+
+void Client::setCommandsDisplaying(bool mode) {
+	_commandsDisplaying = mode;
 }

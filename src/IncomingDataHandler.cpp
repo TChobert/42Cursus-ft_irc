@@ -80,6 +80,10 @@ commandParseStatus IncomingDataHandler::defineCommandType(Command& currentComman
 		currentCommand.setCommandType(CMD_MYSERVER);
 		return (KNOWN_COMMAND);
 	}
+	else if (commandKey == "DISPLAYCMD") {
+		currentCommand.setCommandType(CMD_DISPLAYCMDS);
+		return (KNOWN_COMMAND);
+	}
 	else {
 		currentCommand.setCommandType(CMD_UNKNOWN);
 		return (UNKNOWN_COMMAND);
@@ -92,6 +96,7 @@ commandParseStatus IncomingDataHandler::ensureCommandIsComplete(commandType type
 		case CMD_QUIT:
 		case CMD_PING:
 		case CMD_MYSERVER:
+		case CMD_DISPLAYCMDS:
 			return COMPLETE_COMMAND;
 		case CMD_PASS:
 		case CMD_NICK:

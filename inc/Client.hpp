@@ -29,6 +29,7 @@ class Client {
 	bool _isResponsePending;
 	bool _needEpollReset;
 	bool _disconnectionPending;
+	bool _commandsDisplaying;
 
 	std::string _nickname;
 	std::string _username;
@@ -60,6 +61,7 @@ class Client {
 	bool getDisconnectionStatus(void) const;
 	bool getEpollReset(void) const;
 	bool isInvitedTo(const std::string& chanName) const;
+	bool getCommandsDisplaying(void) const;
 
 	void setResponsePending(bool mode);
 	void setNickname(const std::string& nick);
@@ -76,4 +78,5 @@ class Client {
 	void setQuitMessage(std::string& message);
 	void setEpollReset(bool status);
 	void setInvitationTo(std::string chanName);
+	void setCommandsDisplaying(bool mode);
 };
