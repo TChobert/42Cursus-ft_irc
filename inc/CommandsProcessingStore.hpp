@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <cerrno>
+#include <iomanip>
 
 #include "Client.hpp"
 #include "Channel.hpp"
@@ -46,7 +47,7 @@ class CommandsProcessingStore {
 	bool setChanNewUserLimit(Client& client, std::string& param, Channel *channel);
 	void displayChannelParameters(std::string& channelName, Client& requester, std::map<std::string, Channel*> channels);
 	void printClients(std::map<int, Client>& clients) const;
-	void printChannels(std::map<std::string, Channel*> channels) const;
+	void printChannels(std::map<std::string, Channel*>& channels) const;
 
 	public:
 

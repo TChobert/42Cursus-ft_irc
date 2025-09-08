@@ -45,6 +45,7 @@ class Channel {
 	bool hasUserLimit(void) const;
 	time_t getCreationTime(void) const;
 	long getMembersNumber(void) const;
+	std::set<std::string> getOperators() const;
 
 	void addMember(Client* newMember);
 	void removeMember(Client& client);

@@ -76,6 +76,10 @@ long Channel::getMembersNumber(void) const {
 	return (static_cast<long>(_members.size()));
 }
 
+std::set<std::string> Channel::getOperators() const {
+	return (_operators);
+}
+
 // SETTERS //
 
 void Channel::setChanName(const std::string& name) {

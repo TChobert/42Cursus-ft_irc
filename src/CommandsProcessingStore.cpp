@@ -827,6 +827,54 @@ void CommandsProcessingStore::printClients(std::map<int,Client>& clients) const 
 		std::cout << BRIGHT_BLUE << "-------" << RESET << std::endl;
 		std::cout << BRIGHT_BLUE << "Nickname: " << it->second.getNickname() << " / Associated fd: " << it->second.getFd() << RESET << std::endl;
 	}
+	std::cout << BRIGHT_BLUE << "-------" << RESET << std::endl;
+}
+
+void CommandsProcessingStore::printChannels(std::map<std::string, Channel*>& channels) const {
+	if (channels.empty()) {
+		std::cout << "\033[33m[INFO]\033[0m No active channels.\n";
+		return ;
+	}
+
+	std::cout << std::left
+		<< BRIGHT_BLUE << std::setw(12) << "Name" << RESET
+		<< BRIGHT_CYAN << std::setw(8) << "Users" << RESET
+		<< BRIGHT_GREEN << std::setw(20) << "Operators" << RESET
+		<< BRIGHT_MAGENTA << std::setw(8) << "Modes" << RESET
+		<< BRIGHT_RED << "Topic" << RESET << std::endl;
+
+	std::cout << std::string(70, '-') << std::endl;
+
+	for (std::map<std::string, Channel*>::const_iterator it = channels.begin(); it != channels.end(); ++it) {
+		Channel* chan = it->second;
+
+		std::string name = chan->getChanName();
+		long users = chan->getMembersNumber();
+
+	std::ostringstream ops;
+	const std::set<std::string>& opSet = chan->getOperators();
+	for (std::set<std::string>::const_iterator opIt = opSet.begin(); opIt != opSet.end(); ++opIt) {
+		if (opIt != opSet.begin()) ops << ",";
+		ops << *opIt;
+	}
+
+	std::string modes;
+	if (chan->isInviteOnly())    modes += "i";
+	if (chan->isKeyProtected())  modes += "k";
+	if (chan->isTopicRestrict()) modes += "t";
+	if (chan->hasUserLimit())    modes += "l";
+
+	std::string topic = chan->getChanTopic();
+
+	std::cout << std::left
+		<< BRIGHT_BLUE << std::setw(12) << name << RESET
+		<< BRIGHT_CYAN  << std::setw(8) << users << RESET
+		<< BRIGHT_GREEN << std::setw(20) << ops.str() << RESET
+		<< BRIGHT_MAGENTA << std::setw(8) << modes << RESET
+		<< BRIGHT_RED << topic << RESET
+		<< std::endl;
+	}
+	std::cout << std::endl;
 }
 
 void CommandsProcessingStore::commandMyServer(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels) {
@@ -835,7 +883,7 @@ void CommandsProcessingStore::commandMyServer(Command& command, Client& client, 
 	(void)channels;
 	std::cout << BRIGHT_MAGENTA << ITALIC << "My Server information required by: " << BRIGHT_YELLOW << client.getNickname() << RESET <<std::endl;
 	printClients(clients);
-	//printChannels(channels);
+	printChannels(channels);
 }
 
 CommandsProcessingStore::CommandProcessPtr CommandsProcessingStore::getCommandProcess(Command& command) {
