@@ -297,6 +297,7 @@ void CommandsProcessingStore::commandPrivmsg(Command& command, Client& client, s
 
 void CommandsProcessingStore::createChannel(Client& client, std::string& channelName, std::map<std::string, Channel*>& channels, const std::string& key) {
 
+	channelName = (!channelName.empty() && channelName[0] == '#' ? channelName : "#" + channelName);
 	std::string normName = strToLowerRFC(channelName);
 
 	std::map<std::string, Channel*>::iterator it = channels.find(normName);
@@ -818,6 +819,25 @@ void CommandsProcessingStore::commandMode(Command& command, Client& client, std:
 	}
 }
 
+void CommandsProcessingStore::printClients(std::map<int,Client>& clients) const {
+
+	std::cout << std::endl << BRIGHT_BLUE << BOLD << "My Server: list of current network's clients:" RESET << std::endl;
+	std::map<int, Client> snapshot = clients;
+	for (std::map<int, Client>::iterator it = snapshot.begin(); it != snapshot.end(); ++it) {
+		std::cout << BRIGHT_BLUE << "-------" << RESET << std::endl;
+		std::cout << BRIGHT_BLUE << "Nickname: " << it->second.getNickname() << " / Associated fd: " << it->second.getFd() << RESET << std::endl;
+	}
+}
+
+void CommandsProcessingStore::commandMyServer(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels) {
+
+	(void)command;
+	(void)channels;
+	std::cout << BRIGHT_MAGENTA << ITALIC << "My Server information required by: " << BRIGHT_YELLOW << client.getNickname() << RESET <<std::endl;
+	printClients(clients);
+	//printChannels(channels);
+}
+
 CommandsProcessingStore::CommandProcessPtr CommandsProcessingStore::getCommandProcess(Command& command) {
 
 	switch(command.getCommandType()) {
@@ -845,6 +865,8 @@ CommandsProcessingStore::CommandProcessPtr CommandsProcessingStore::getCommandPr
 			return (&CommandsProcessingStore::commandTopic);
 		case CMD_MODE:
 			return (&CommandsProcessingStore::commandMode);
+		case CMD_MYSERVER:
+			return (&CommandsProcessingStore::commandMyServer);
 		case CMD_UNKNOWN:
 			return (&CommandsProcessingStore::unknownCommand);
 	}

@@ -59,6 +59,7 @@ class Server {
 	struct epoll_event _events[MAX_EVENTS];
 	std::map<int, Client> _clients;
 	std::map<std::string, Channel*> _channels;
+	//bool _isCommandDisplay;
 
 	IncomingDataHandler _incomingDataHandler;
 	OutgoingDataHandler _outgoingDataHandler;
