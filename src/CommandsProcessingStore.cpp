@@ -928,7 +928,6 @@ void CommandsProcessingStore::commandDisplayCommands(Command& command, Client& c
 		client.enqueueOutput(":myserver 451 " + (client.getNickname().empty() ? std::string("*") : client.getNickname()) + " " + command.getCommand() + " :You have not registered");
 		return ;
 	}
-
 	bool display = client.getCommandsDisplaying();
 
 	if (!display) {
@@ -938,6 +937,40 @@ void CommandsProcessingStore::commandDisplayCommands(Command& command, Client& c
 		client.setCommandsDisplaying(false);
 		std::cout << BRIGHT_YELLOW << "Commands displaying desactivated by: " << BRIGHT_BLUE << client.getFd() << RESET << std::endl;
 	}
+}
+
+void CommandsProcessingStore::commandMoulinette(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels) {
+
+	(void)command;
+	(void)client;
+	(void)clients;
+	(void)channels;
+
+	if (!client.isRegistered()) {
+		client.enqueueOutput(":myserver 451 " + (client.getNickname().empty() ? std::string("*") : client.getNickname()) + " " + command.getCommand() + " :You have not registered");
+		return ;
+	}
+	const char* colors[] = {BRIGHT_RED, BRIGHT_GREEN, BRIGHT_YELLOW, BRIGHT_BLUE, BRIGHT_MAGENTA, BRIGHT_CYAN};
+	int numColors = sizeof(colors) / sizeof(colors[0]);
+
+	const char* cat[] = {
+		"           __..--''``---....___   _..._    __",
+		" /// //_.-'    .-/\";  `        ``<._  ``.''_ `. / // /",
+		"///_.-' _..--.'_    \\                    `( ) ) // //",
+		"/ (_..-' // (< _     ;_..__               ; `' / ///",
+		" / // // //  `-._,_)' // / ``--...____..-' /// / //"
+	};
+	int numLines = sizeof(cat) / sizeof(cat[0]);
+
+	std::cout << std::endl;
+	for (int i = 0; i < numLines; ++i) {
+		std::cout << colors[i % numColors] << cat[i] << RESET << std::endl;
+	}
+
+	std::cout << std::endl
+		<< BOLD << BRIGHT_MAGENTA
+		<< ">>> My Server salutes Moulinette... <<<"
+		<< RESET << std::endl << std::endl;
 }
 
 CommandsProcessingStore::CommandProcessPtr CommandsProcessingStore::getCommandProcess(Command& command) {
@@ -971,6 +1004,8 @@ CommandsProcessingStore::CommandProcessPtr CommandsProcessingStore::getCommandPr
 			return (&CommandsProcessingStore::commandMyServer);
 		case CMD_DISPLAYCMDS:
 			return (&CommandsProcessingStore::commandDisplayCommands);
+		case CMD_MOULINETTE:
+			return (&CommandsProcessingStore::commandMoulinette);
 		case CMD_UNKNOWN:
 			return (&CommandsProcessingStore::unknownCommand);
 	}

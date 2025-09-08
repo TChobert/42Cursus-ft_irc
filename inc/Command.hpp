@@ -44,6 +44,7 @@ enum commandType {
 	CMD_MODE,
 	CMD_MYSERVER,
 	CMD_DISPLAYCMDS,
+	CMD_MOULINETTE,
 	CMD_QUIT
 };
 

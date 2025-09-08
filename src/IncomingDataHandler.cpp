@@ -84,6 +84,10 @@ commandParseStatus IncomingDataHandler::defineCommandType(Command& currentComman
 		currentCommand.setCommandType(CMD_DISPLAYCMDS);
 		return (KNOWN_COMMAND);
 	}
+	else if (commandKey == "MOULINETTE") {
+		currentCommand.setCommandType(CMD_MOULINETTE);
+		return (KNOWN_COMMAND);
+	}
 	else {
 		currentCommand.setCommandType(CMD_UNKNOWN);
 		return (UNKNOWN_COMMAND);
@@ -97,6 +101,7 @@ commandParseStatus IncomingDataHandler::ensureCommandIsComplete(commandType type
 		case CMD_PING:
 		case CMD_MYSERVER:
 		case CMD_DISPLAYCMDS:
+		case CMD_MOULINETTE:
 			return COMPLETE_COMMAND;
 		case CMD_PASS:
 		case CMD_NICK:
@@ -177,7 +182,7 @@ void IncomingDataHandler::getParamsAndTrailing(std::string& line, Command& curre
 }
 
 void IncomingDataHandler::addCommandToList(Client& client, Command& command) {
-	command.printCommand();
+	//command.printCommand();
 	client.addCommand(command);
 }
 

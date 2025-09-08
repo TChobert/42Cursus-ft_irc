@@ -34,6 +34,8 @@ std::string CommandsExecutor::commandTypeToString(const commandType& type) const
 			return "DISPLAYCMDS";
 		case CMD_QUIT:
 			return "QUIT";
+		case CMD_MOULINETTE:
+			return "MOULINETTE";
 		default:
 			return "UNKNOWN";
 	}
