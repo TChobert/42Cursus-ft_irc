@@ -80,6 +80,10 @@ std::set<std::string> Channel::getOperators() const {
 	return (_operators);
 }
 
+std::map<std::string, Client*>& Channel::getMembers(void) {
+	return (_members);
+}
+
 // SETTERS //
 
 void Channel::setChanName(const std::string& name) {
@@ -202,4 +206,13 @@ void Channel::removeUserLimit(void) {
 
 void Channel::setUserLimit(long userLimit) {
 	_userLimit = userLimit;
+}
+
+void Channel::updateMemberNickname(const std::string& oldNick, const std::string& newNick) {
+	std::map<std::string, Client*>::iterator it = _members.find(oldNick);
+	if (it != _members.end()) {
+		Client* c = it->second;
+		_members.erase(it);
+		_members[newNick] = c;
+	}
 }

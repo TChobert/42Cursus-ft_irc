@@ -45,7 +45,8 @@ class Channel {
 	bool hasUserLimit(void) const;
 	time_t getCreationTime(void) const;
 	long getMembersNumber(void) const;
-	std::set<std::string> getOperators() const;
+	std::set<std::string> getOperators(void) const;
+	std::map<std::string, Client*>& getMembers(void);
 
 	void addMember(Client* newMember);
 	void removeMember(Client& client);
@@ -63,4 +64,5 @@ class Channel {
 	void setUserLimit(long userLimit);
 	void removeKey(void);
 	void removeUserLimit(void);
+	void updateMemberNickname(const std::string& oldNick, const std::string& newNick);
 };

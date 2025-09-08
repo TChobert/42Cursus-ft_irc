@@ -162,14 +162,8 @@ bool CommandsProcessingStore::isAlreadyInUse(std::string& nickname, const std::m
 	return (false);
 }
 
-void CommandsProcessingStore::commandNick(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels) {
+void CommandsProcessingStore::updateClientNickname(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels) {
 
-	(void)channels;
-	std::cout << "Command NICK" <<std::endl;
-	if (!client.authProcessStatus._passValidated) {
-		client.enqueueOutput(":myserver 451 NICK :You have not registered");
-		return ;
-	}
 	std::string nickname = command.getParam(0);
 	if (nickname.empty()) {
 		client.enqueueOutput(":myserver 461 " + getReplyTarget(client) + " NICK :not enough parameters");
@@ -183,14 +177,59 @@ void CommandsProcessingStore::commandNick(Command& command, Client& client, std:
 		client.enqueueOutput(":myserver 433 " + nickname + " :Nickname is already in use");
 		return ;
 	}
-
+	std::string previousNick = client.getNormalizedRfcNickname();
 	client.setNickname(nickname);
+	for (std::map<std::string, Channel*>::iterator it = channels.begin(); it != channels.end(); ++it) {
+		Channel *currentChan = it->second;
 
-	if (!client.isRegistered()) {
-		client.authProcessStatus._nickNameSet =true;
-		if (client.authProcessStatus.isAuthProcessComplete()) {
-			client.setRegistered(true);
-			sendWelcomeMessages(client);
+		if (currentChan->isMember(previousNick)) {
+			currentChan->updateMemberNickname(previousNick, client.getNormalizedRfcNickname());
+		}
+	}
+	for (std::map<std::string, Channel*>::iterator it = channels.begin(); it != channels.end(); ++it) {
+		Channel* chan = it->second;
+		if (chan->isMember(nickname)) {
+			std::string msg = ":" + previousNick + "!" + client.getUsername() + "@" + client.getHostname() + " NICK :" + nickname;
+		chan->broadcastMsg(client.getNormalizedRfcNickname(), msg);
+		}
+	}
+}
+
+void CommandsProcessingStore::commandNick(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels) {
+
+	(void)channels;
+	if (!client.authProcessStatus._passValidated) {
+		client.enqueueOutput(":myserver 451 NICK :You have not registered");
+		return ;
+	}
+
+	std::string previousNick = client.getNickname();
+	if (previousNick != "*") {
+		updateClientNickname(command, client, clients, channels);
+		return ;
+	} else {
+		std::string nickname = command.getParam(0);
+		if (nickname.empty()) {
+			client.enqueueOutput(":myserver 461 " + getReplyTarget(client) + " NICK :not enough parameters");
+			return ;
+		}
+		if (!checkNicknameValidity(nickname)) {
+			client.enqueueOutput(":myserver 432 " + getReplyTarget(client) + " " + nickname + " :Erroneous nickname");
+			return ;
+		}
+		if (isAlreadyInUse(nickname, clients)) {
+			client.enqueueOutput(":myserver 433 " + nickname + " :Nickname is already in use");
+			return ;
+		}
+
+		client.setNickname(nickname);
+
+		if (!client.isRegistered()) {
+			client.authProcessStatus._nickNameSet =true;
+			if (client.authProcessStatus.isAuthProcessComplete()) {
+				client.setRegistered(true);
+				sendWelcomeMessages(client);
+			}
 		}
 	}
 }
@@ -200,7 +239,6 @@ void CommandsProcessingStore::commandUser(Command& command, Client& client, std:
 	(void)clients;
 	(void)channels;
 
-	std::cout << "Command USER" <<std::endl;
 	if (!client.authProcessStatus._passValidated || !client.authProcessStatus._nickNameSet) {
 		client.enqueueOutput(":myserver 451 " + getReplyTarget(client) + " USER :You have not registered");
 		return ;
@@ -248,20 +286,16 @@ void CommandsProcessingStore::privmsgToClient(Client& sender, std::string& targe
 
 void CommandsProcessingStore::privmsgToChannel(Client& sender, std::string& target, std::map<std::string, Channel*>& channels, std::string message) {
 
-	std::cout << RED << "TARGET IS : " << target << std::endl << RESET;
 	if (target.empty()) {
-		std::cout << "ONE !" << std::endl;
 		sender.enqueueOutput(":myserver 401 " + getReplyTarget(sender) + " " + target + " :No such nick/channel");
 		return ;
 	}
 	std::map<std::string, Channel*>::iterator it = channels.find(target);
 	if(it != channels.end()) {
-		std::cout << "TWO !" << std::endl;
 		if (it->second->isMember(sender.getNormalizedRfcNickname())) {
 			std::string fullMsg = ":" + sender.getPrefix() + " PRIVMSG " + target + " :" + message;
 			it->second->broadcastMsg(sender.getNormalizedRfcNickname(), fullMsg);
 		} else {
-			std::cout << "THREE !" << std::endl;
 			sender.enqueueOutput(":myserver 404 " + getReplyTarget(sender) + " " + target + " :Cannot send to channel (not a member)");
 		}
 		return ;

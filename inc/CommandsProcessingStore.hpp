@@ -48,6 +48,7 @@ class CommandsProcessingStore {
 	void displayChannelParameters(std::string& channelName, Client& requester, std::map<std::string, Channel*> channels);
 	void printClients(std::map<int, Client>& clients) const;
 	void printChannels(std::map<std::string, Channel*>& channels) const;
+	void updateClientNickname(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels);
 
 	public:
 
