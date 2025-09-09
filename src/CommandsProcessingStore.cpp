@@ -840,6 +840,22 @@ void CommandsProcessingStore::displayChannelParameters(std::string& channelName,
 	requester.enqueueOutput(":myserver 329 " + requester.getNickname() + " " + channelName + " " + oss.str());
 }
 
+void CommandsProcessingStore::displayUserModes(Client& requester, std::string& nick, std::map<int, Client>& clients) {
+
+	std::string normalizedNick = strToLowerRFC(nick);
+
+	std::map<int, Client>::iterator it;
+	for (it = clients.begin(); it != clients.end(); ++it) {
+		if (it->second.getNormalizedRfcNickname() == normalizedNick) {
+			requester.enqueueOutput(":myserver 221 " + requester.getNickname() + " +");
+			break;
+		}
+	}
+	if (it == clients.end()) {
+		requester.enqueueOutput(":myserver 401 " + requester.getNickname() + " " + nick + " :No such nick");
+	}
+}
+
 void CommandsProcessingStore::commandMode(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels) {
 
 	if (!client.isRegistered()) {
@@ -848,12 +864,21 @@ void CommandsProcessingStore::commandMode(Command& command, Client& client, std:
 	}
 
 	std::vector<std::string> params = command.getParams();
+	std::string targetName = strToLowerRFC(params[0]);
 
 	if (params.size() == 1) {
-		(displayChannelParameters(params[0], client, channels));
+		if (targetName[0] == '#') {
+			displayChannelParameters(params[0], client, channels);
+		} else {
+			displayUserModes(client, params[0], clients);
+		}
 		return ;
 	} else {
-		std::string chanName = strToLowerRFC(params[0]);
+		if (targetName[0] != '#') {
+			displayUserModes(client, params[0], clients);
+			return ;
+		}
+		std::string chanName = targetName;
 		if (!checkChannelExistence(chanName, channels)) {
 			client.enqueueOutput(":myserver 403 " + client.getNickname() + " " + chanName + " :No such channel");
 			return ;

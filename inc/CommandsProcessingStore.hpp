@@ -46,6 +46,7 @@ class CommandsProcessingStore {
 	bool setChanOperator(Client& requester, std::map<int, Client>& clients, modeChange& currentMode, std::string& param, Channel *channel);
 	bool setChanNewUserLimit(Client& client, std::string& param, Channel *channel);
 	void displayChannelParameters(std::string& channelName, Client& requester, std::map<std::string, Channel*> channels);
+	void displayUserModes(Client& requester, std::string& userNick, std::map<int, Client>& clients);
 	void printClients(std::map<int, Client>& clients) const;
 	void printChannels(std::map<std::string, Channel*>& channels) const;
 	void updateClientNickname(Command& command, Client& client, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels);
