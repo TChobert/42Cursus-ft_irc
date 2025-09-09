@@ -65,4 +65,5 @@ class Channel {
 	void removeKey(void);
 	void removeUserLimit(void);
 	void updateMemberNickname(const std::string& oldNick, const std::string& newNick);
+	void updateOperatorNickname(const std::string& oldNick, const std::string& newNick);
 };

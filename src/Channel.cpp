@@ -209,10 +209,20 @@ void Channel::setUserLimit(long userLimit) {
 }
 
 void Channel::updateMemberNickname(const std::string& oldNick, const std::string& newNick) {
+
 	std::map<std::string, Client*>::iterator it = _members.find(oldNick);
 	if (it != _members.end()) {
 		Client* c = it->second;
 		_members.erase(it);
 		_members[newNick] = c;
+	}
+}
+
+void Channel::updateOperatorNickname(const std::string& oldNick, const std::string& newNick) {
+
+	std::set<std::string>::iterator it = _operators.find(oldNick);
+	if (it != _operators.end()) {
+		_operators.insert(newNick);
+		_operators.erase(oldNick);
 	}
 }

@@ -184,13 +184,16 @@ void CommandsProcessingStore::updateClientNickname(Command& command, Client& cli
 
 		if (currentChan->isMember(previousNick)) {
 			currentChan->updateMemberNickname(previousNick, client.getNormalizedRfcNickname());
+			if (currentChan->isOperator(previousNick)) {
+				currentChan->updateOperatorNickname(previousNick, client.getNormalizedRfcNickname());
+			}
 		}
 	}
 	for (std::map<std::string, Channel*>::iterator it = channels.begin(); it != channels.end(); ++it) {
 		Channel* chan = it->second;
 		if (chan->isMember(nickname)) {
 			std::string msg = ":" + previousNick + "!" + client.getUsername() + "@" + client.getHostname() + " NICK :" + nickname;
-		chan->broadcastMsg(client.getNormalizedRfcNickname(), msg);
+			chan->broadcastMsg(client.getNormalizedRfcNickname(), msg);
 		}
 	}
 }
