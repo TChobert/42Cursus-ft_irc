@@ -955,6 +955,7 @@ void CommandsProcessingStore::commandMyServer(Command& command, Client& client, 
 		return ;
 	}
 
+	std::cout << std::endl;
 	std::cout << BRIGHT_MAGENTA << ITALIC << "My Server information required by: " << BRIGHT_YELLOW << client.getNickname() << RESET <<std::endl;
 	printClients(clients);
 	printChannels(channels);
