@@ -530,6 +530,10 @@ void CommandsProcessingStore::handleSingleClientKicking(Command& command, Client
 	std::string kickMsg = ":" + requester.getPrefix() + " KICK " + chan->getChanName() + " " + victim->getNickname() + " :" + reason;
 	chan->broadcastMsg("", kickMsg);
 	chan->removeMember(*victim);
+	if (chan->isEmpty()) {
+		channels.erase(chan->getChanName());
+		delete chan;
+	}
 }
 
 void CommandsProcessingStore::handleMultipleClientsKicking(std::vector<std::string>& params, Client& requester, std::map<int, Client>& clients, std::map<std::string, Channel*>& channels) {
