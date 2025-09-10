@@ -40,7 +40,7 @@ The goal of this project is to explore **network programming**, **protocol parsi
     - Topic
     - Modes
    
-[!Illustration of MYSERVER command output](assets/myserver.png)
+![Illustration of MYSERVER command output](assets/myserver.png)
 
 - **`DISPLAYCMDS`**  
   Enables/disables **per-client command debugging** on the server terminal.  
@@ -50,7 +50,7 @@ The goal of this project is to explore **network programming**, **protocol parsi
   - Parameters  
   - Trailing part
 
-[!Illustration of DISPLAYCMD output wit a command PRIVMSG](assets/displaycmd.png) 
+![Illustration of DISPLAYCMD output wit a command PRIVMSG](assets/displaycmd.png) 
 
 ### Extra Goodies
 
