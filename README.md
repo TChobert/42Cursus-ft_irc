@@ -28,7 +28,7 @@ The goal of this project is to explore **network programming**, **protocol parsi
 - Private messaging (`PRIVMSG`).
 - Proper numeric error replies (RFC-compliant).
 
-### Custom Commands
+### Custom Commands (available with netcat for testing)
 
 - **`MYSERVER`**  
   Displays current server state (only available with netcat) :
@@ -38,7 +38,9 @@ The goal of this project is to explore **network programming**, **protocol parsi
     - User count
     - Operator nicknames
     - Topic
-    - Modes  
+    - Modes
+   
+![Illustration of MYSERVER command output](assets/myserver.png)
 
 - **`DISPLAYCMDS`**  
   Enables/disables **per-client command debugging** on the server terminal.  
@@ -46,7 +48,9 @@ The goal of this project is to explore **network programming**, **protocol parsi
   
   - Command type  
   - Parameters  
-  - Trailing part  
+  - Trailing part
+
+![Illustration of DISPLAYCMD output wit a command PRIVMSG](assets/displaycmd.png) 
 
 ### Extra Goodies
 
@@ -60,7 +64,7 @@ The goal of this project is to explore **network programming**, **protocol parsi
 ### Requirements
 
 - **Linux environment** (tested on Ubuntu/Debian)  
-- **C++98 compiler** (e.g. `g++`)  
+- **C++98 compiler** (e.g. `c++`)  
 - **Make** build system
 
 ### Steps
@@ -115,10 +119,34 @@ Example :
 
 ## 💻 Connecting Clients
 
+Recommended clients:
+
+- netcat (for testing)
+- irssi
 
 Using netcat (for testing):
+
+```bash
+nc -C <host> <port>
+```
 
 ```bash
 nc -C localhost 6667
 ```
 
+Using irssi:
+
+```bash
+irssi -c <host> -p <port> -w <server_password> -n <nickname>
+```
+
+```bash
+irssi -c localhost -p 6667 -w mypass -n mynick
+
+```
+
+---
+
+## ✉️ Netcat session example:
+
+![Example of a simple client session using netcat](assets/netcat_session_example.png)
