@@ -28,7 +28,7 @@ The goal of this project is to explore **network programming**, **protocol parsi
 - Private messaging (`PRIVMSG`).
 - Proper numeric error replies (RFC-compliant).
 
-### Custom Commands
+### Custom Commands (available with netcat for testing)
 
 - **`MYSERVER`**  
   Displays current server state (only available with netcat) :
@@ -119,10 +119,28 @@ Example :
 
 ## 💻 Connecting Clients
 
+Recommended clients:
+
+- netcat (for testing)
+- irssi
 
 Using netcat (for testing):
 
 ```bash
+nc -C <host> <port>
+```
+
+```bash
 nc -C localhost 6667
 ```
+
+Using irssi:
+
+```bash
+irssi -c <host> -p <port> -w <server_password> -n <nickname>
+```
+
+```bash
+irssi -c localhost -p 6667 -w mypass -n mynick
+
 
