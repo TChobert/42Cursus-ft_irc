@@ -9,6 +9,7 @@ The goal of this project is to explore **network programming**, **protocol parsi
 
 ---
 
+
 ## ⚙️ Features
 
 ### Core Features
@@ -53,6 +54,7 @@ The goal of this project is to explore **network programming**, **protocol parsi
 
 ---
 
+
 ## 🛠️ Installation
 
 ### Requirements
@@ -62,21 +64,35 @@ The goal of this project is to explore **network programming**, **protocol parsi
 - **Make** build system
 
 ### Steps
+
 1. Clone the repository:
    ```bash
    git@github.com:TChobert/42Cursus-ft_irc.git
    cd ft_irc
 
+2. Compile the project:
+   ```bash
+   make
+
+3. Run the server:
+   ```bash
+   ./ircserv <port> <password>
+
+4.Connect using an IRC client (e.g. irssi or nc).
+
 
 ---
+
 
 ## 🛠️ Compilation
 
 The project is written in **C++98**. To compile:
 
+```bash
 make
-
+```
 ---
+
 
 ## 🚀 Usage
 
@@ -93,7 +109,9 @@ Example :
 ```bash
 ./ircserv 6667 mypass
 ```
+
 ---
+
 
 ## 💻 Connecting Clients
 
