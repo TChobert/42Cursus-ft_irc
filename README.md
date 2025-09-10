@@ -149,4 +149,44 @@ irssi -c localhost -p 6667 -w mypass -n mynick
 
 ## ✉️ Netcat session example:
 
+- Single client view:
+
 ![Example of a simple client session using netcat](assets/netcat_session_example.png)
+
+
+- Multiple clients:
+
+```bash
+
+# Terminal 1: Start the IRC server
+./ircserv 6667 superpass
+
+# Terminal 2: Connect client 1 (Eve)
+nc -C localhost 6667
+PASS superpass
+NICK eve
+USER eve 0 * :Eve Example
+JOIN #fun
+MYSERVER
+PRIVMSG #fun :Hi everyone, Eve joined the fun!
+
+# Terminal 3: Connect client 2 (Mallory)
+nc -C localhost 6667
+PASS superpass
+NICK mallory
+USER mallory 0 * :Mallory Test
+JOIN #fun
+PRIVMSG #fun :Hello Eve! Welcome to #fun
+DISPLAYCMDS
+
+# Terminal 4: Connect client 3 (Trudy)
+nc -C localhost 6667
+PASS superpass
+NICK trudy
+USER trudy 0 * :Trudy User
+JOIN #fun
+PRIVMSG #fun :Hey folks, Trudy is here!
+MYSERVER
+QUIT :See you later!
+```
+
