@@ -14,6 +14,7 @@
 5. [Usage](##usage)
 6. [Connecting Clients](##connecting-clients)
 7. [Netcat Session Example](##netcat-session-example)
+8. [Useful Resources & Documentation](##useful-resources--documentation)
 
 
 ## 📌 Description
@@ -205,4 +206,17 @@ PRIVMSG #fun :Hey folks, Trudy is here!
 MYSERVER
 QUIT :See you later!
 ```
+
+---
+
+## 📚 Useful Resources & Documentation
+
+- **IRC Protocol (RFC 1459)** – Original IRC specification  
+  [https://datatracker.ietf.org/doc/html/rfc1459](https://datatracker.ietf.org/doc/html/rfc1459)
+
+- **IRC Protocol (RFC 2812)** – Updated IRC client protocol  
+  [https://datatracker.ietf.org/doc/html/rfc2812](https://datatracker.ietf.org/doc/html/rfc2812)
+
+- **IRC Numeric Replies Reference** – Detailed list of numeric replies and meanings  
+  [https://www.alien.net.au/irc/irc2numerics.html](https://www.alien.net.au/irc/irc2numerics.html)
 
