@@ -53,12 +53,30 @@ The goal of this project is to explore **network programming**, **protocol parsi
 
 ---
 
+## 🛠️ Installation
+
+### Requirements
+
+- **Linux environment** (tested on Ubuntu/Debian)  
+- **C++98 compiler** (e.g. `g++`)  
+- **Make** build system
+
+### Steps
+1. Clone the repository:
+   ```bash
+   git@github.com:TChobert/42Cursus-ft_irc.git
+   cd ft_irc
+
+
+---
+
 ## 🛠️ Compilation
 
 The project is written in **C++98**. To compile:
 
 make
 
+---
 
 ## 🚀 Usage
 
@@ -72,8 +90,9 @@ Start the server with:
 
 Example :
 
+```bash
 ./ircserv 6667 mypass
-
+```
 ---
 
 ## 💻 Connecting Clients
@@ -81,5 +100,7 @@ Example :
 
 Using netcat (for testing):
 
+```bash
 nc -C localhost 6667
+```
 
