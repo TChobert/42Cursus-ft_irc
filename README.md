@@ -1,5 +1,21 @@
 # ft_irc - IRC Server
 
+# Table of Contents
+
+1. [Description](#📌-description)
+2. [Features](#⚙️-features)
+   - [Core Features](#core-features)
+   - [Custom Commands](#custom-commands-available-with-netcat-for-testing)
+   - [Extra Goodies](#extra-goodies)
+3. [Installation](#🛠️-installation)
+   - [Requirements](#requirements)
+   - [Steps](#steps)
+4. [Compilation](#🛠️-compilation)
+5. [Usage](#🚀-usage)
+6. [Connecting Clients](#💻-connecting-clients)
+7. [Netcat Session Example](#✉️-netcat-session-example)
+
+
 ## 📌 Description
 `ft_irc` is a custom implementation of an **IRC server** written in **C++98**, following the IRC protocol specification (**RFC 1459**).  
 
