@@ -143,4 +143,10 @@ irssi -c <host> -p <port> -w <server_password> -n <nickname>
 ```bash
 irssi -c localhost -p 6667 -w mypass -n mynick
 
+```
 
+---
+
+## ✉️ Netcat session example:
+
+![Example of a simple client session using netcat](assets/netcat_session_example.png)
