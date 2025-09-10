@@ -2,18 +2,18 @@
 
 # Table of Contents
 
-1. [Description](#description)
-2. [Features](#features)
+1. [Description](##description)
+2. [Features](##features)
    - [Core Features](#core-features)
    - [Custom Commands](#custom-commands-available-with-netcat-for-testing)
    - [Extra Goodies](#extra-goodies)
-3. [Installation](#installation)
+3. [Installation](##installation)
    - [Requirements](#requirements)
    - [Steps](#steps)
-4. [Compilation](#compilation)
-5. [Usage](#usage)
-6. [Connecting Clients](#connecting-clients)
-7. [Netcat Session Example](#netcat-session-example)
+4. [Compilation](##compilation)
+5. [Usage](##usage)
+6. [Connecting Clients](##connecting-clients)
+7. [Netcat Session Example](##netcat-session-example)
 
 
 ## 📌 Description
