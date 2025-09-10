@@ -38,7 +38,9 @@ The goal of this project is to explore **network programming**, **protocol parsi
     - User count
     - Operator nicknames
     - Topic
-    - Modes  
+    - Modes
+   
+  [!Illustration of MYSERVER command output](./assets/myserver.png)
 
 - **`DISPLAYCMDS`**  
   Enables/disables **per-client command debugging** on the server terminal.  
@@ -46,7 +48,9 @@ The goal of this project is to explore **network programming**, **protocol parsi
   
   - Command type  
   - Parameters  
-  - Trailing part  
+  - Trailing part
+ 
+    [!Illustration of DISPLAYCMD output wit a command PRIVMSG](./assets/displaycmd.png) 
 
 ### Extra Goodies
 
@@ -60,7 +64,7 @@ The goal of this project is to explore **network programming**, **protocol parsi
 ### Requirements
 
 - **Linux environment** (tested on Ubuntu/Debian)  
-- **C++98 compiler** (e.g. `g++`)  
+- **C++98 compiler** (e.g. `c++`)  
 - **Make** build system
 
 ### Steps
